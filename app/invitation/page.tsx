@@ -1,6 +1,6 @@
 'use client'
 
-import {Suspense, useState} from 'react'
+import {Suspense, useState, useEffect} from 'react'
 import {motion, AnimatePresence} from 'framer-motion'
 import Link from 'next/link'
 import {useSearchParams} from 'next/navigation'
@@ -14,51 +14,80 @@ const fadeUp = {
     })
 }
 
-type Wish = { id: number; name: string; message: string; time: string }
+type Wish = { id: number; name: string; message: string; created_at: string }
 
-const seedWishes: Wish[] = [
-    {
-        id: 1,
-        name: 'Keluarga Besar Putra',
-        message: 'Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. Barakallahu lakuma wa baraka alaikuma wa jama\'a bainakuma fi khair 🤍',
-        time: '1 hari lalu'
-    },
-    {
-        id: 2,
-        name: 'Tante Rina',
-        message: 'Selamat menempuh hidup baru, semoga selalu harmonis dan dijauhkan dari segala musibah. Aamiin.',
-        time: '2 hari lalu'
-    },
-]
+function timeAgo(dateStr: string) {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+    if (mins < 1) return 'Just now'
+    if (mins < 60) return `${mins} mins ago`
+    if (hours < 24) return `${hours} hours ago`
+    return `${days} days ago`
+}
 
 function WishesSection({prefillName}: { prefillName: string }) {
-    const [wishes, setWishes] = useState<Wish[]>(seedWishes)
+    const [wishes, setWishes] = useState<Wish[]>([])
+    const [total, setTotal] = useState(0)
+    const [offset, setOffset] = useState(0)
     const [name, setName] = useState(prefillName)
     const [message, setMessage] = useState('')
     const [submitted, setSubmitted] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [visibleCount, setVisibleCount] = useState(5)
+    const [fetching, setFetching] = useState(true)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const LIMIT = 5
 
-    const visibleWishes = wishes.slice(0, visibleCount)
-    const hasMore = visibleCount < wishes.length
+    useEffect(() => {
+        fetchWishes(0, true)
+    }, [])
 
-    function handleSubmit() {
+    async function fetchWishes(newOffset: number, replace = false) {
+        try {
+            const res = await fetch(`/api/wishes?offset=${newOffset}&limit=${LIMIT}`)
+            const data = await res.json()
+            setWishes(prev => replace ? data.wishes : [...prev, ...data.wishes])
+            setTotal(data.total)
+            setOffset(newOffset + LIMIT)
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setFetching(false)
+            setLoadingMore(false)
+        }
+    }
+
+    async function handleSubmit() {
         if (!name.trim() || !message.trim()) return
         setLoading(true)
-        setTimeout(() => {
-            const newWish: Wish = {
-                id: Date.now(),
-                name: name.trim(),
-                message: message.trim(),
-                time: 'Just now',
+        try {
+            const res = await fetch('/api/wishes', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name: name.trim(), message: message.trim()}),
+            })
+            const data = await res.json()
+            if (data.wish) {
+                setWishes(prev => [data.wish, ...prev])
+                setTotal(t => t + 1)
+                setMessage('')
+                setSubmitted(true)
+                setTimeout(() => setSubmitted(false), 3000)
             }
-            setWishes(prev => [newWish, ...prev])
-            setMessage('')
-            setSubmitted(true)
+        } catch (e) {
+            console.error(e)
+        } finally {
             setLoading(false)
-            setTimeout(() => setSubmitted(false), 3000)
-        }, 600)
+        }
     }
+
+    function loadMore() {
+        setLoadingMore(true)
+        fetchWishes(offset)
+    }
+
+    const hasMore = wishes.length < total
 
     return (
         <div className="px-8 pb-16">
@@ -148,7 +177,7 @@ function WishesSection({prefillName}: { prefillName: string }) {
                         transition: 'background 0.2s'
                     }}
                 >
-                    {loading ? 'Sending...' : submitted ? '✓ Sent!' : 'Send Wishes'}
+                    {loading ? 'Sending...' : submitted ? '✓ Sent!' : 'Send'}
                 </button>
                 <AnimatePresence>
                     {submitted && (
@@ -168,47 +197,56 @@ function WishesSection({prefillName}: { prefillName: string }) {
 
             <motion.div initial={{opacity: 0}} animate={{opacity: 1}} transition={{delay: 0.4, duration: 0.6}}>
                 <p style={{fontFamily: "'Times New Roman', serif", fontSize: 13, color: '#7a8e7c', marginBottom: 16}}>
-                    {wishes.length} wishes
+                    {total} wishes
                 </p>
-                <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
-                    <AnimatePresence>
-                        {visibleWishes.map(wish => (
-                            <motion.div key={wish.id} initial={{opacity: 0, y: -12}} animate={{opacity: 1, y: 0}}
-                                        transition={{duration: 0.4}}
-                                        style={{
-                                            padding: '14px 16px',
-                                            borderRadius: 12,
-                                            background: '#f8fdf5',
-                                            border: '1px solid #c8d8b8'
-                                        }}>
-                                <div className="flex items-center justify-between mb-2">
-                                    <p style={{
-                                        fontFamily: "'Cormorant Garamond', serif",
-                                        fontSize: 16,
-                                        fontWeight: 600,
-                                        color: '#354B39'
-                                    }}>{wish.name}</p>
+                {fetching ? (
+                    <p style={{
+                        fontFamily: "'Times New Roman', serif",
+                        fontSize: 14,
+                        color: '#9aaa9c',
+                        textAlign: 'center'
+                    }}>Loading...</p>
+                ) : (
+                    <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+                        <AnimatePresence>
+                            {wishes.map(wish => (
+                                <motion.div key={wish.id} initial={{opacity: 0, y: -12}} animate={{opacity: 1, y: 0}}
+                                            transition={{duration: 0.4}}
+                                            style={{
+                                                padding: '14px 16px',
+                                                borderRadius: 12,
+                                                background: '#f8fdf5',
+                                                border: '1px solid #c8d8b8'
+                                            }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p style={{
+                                            fontFamily: "'Cormorant Garamond', serif",
+                                            fontSize: 16,
+                                            fontWeight: 600,
+                                            color: '#354B39'
+                                        }}>{wish.name}</p>
+                                        <p style={{
+                                            fontFamily: "'Times New Roman', serif",
+                                            fontSize: 11,
+                                            color: '#9aaa9c'
+                                        }}>{timeAgo(wish.created_at)}</p>
+                                    </div>
                                     <p style={{
                                         fontFamily: "'Times New Roman', serif",
-                                        fontSize: 11,
-                                        color: '#9aaa9c'
-                                    }}>{wish.time}</p>
-                                </div>
-                                <p style={{
-                                    fontFamily: "'Times New Roman', serif",
-                                    fontSize: 14,
-                                    lineHeight: '22px',
-                                    color: '#132617'
-                                }}>{wish.message}</p>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                </div>
+                                        fontSize: 14,
+                                        lineHeight: '22px',
+                                        color: '#132617'
+                                    }}>{wish.message}</p>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+                )}
 
-                {/* Load more */}
                 {hasMore && (
                     <motion.button
-                        onClick={() => setVisibleCount(c => c + 5)}
+                        onClick={loadMore}
+                        disabled={loadingMore}
                         className="w-full mt-6"
                         style={{
                             padding: '12px',
@@ -218,11 +256,11 @@ function WishesSection({prefillName}: { prefillName: string }) {
                             fontFamily: "'Times New Roman', serif",
                             fontSize: 14,
                             color: '#45614B',
-                            cursor: 'pointer',
+                            cursor: 'pointer'
                         }}
                         whileTap={{scale: 0.97}}
                     >
-                        Load more ({wishes.length - visibleCount} remaining)
+                        {loadingMore ? 'Loading...' : `Load more (${total - wishes.length} remaining)`}
                     </motion.button>
                 )}
             </motion.div>
