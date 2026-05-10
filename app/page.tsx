@@ -4,16 +4,20 @@ import {useState, useEffect} from 'react'
 import {motion, useAnimationControls, AnimatePresence} from 'framer-motion'
 import {useRouter, useSearchParams} from 'next/navigation'
 import Image from 'next/image'
+import {Suspense} from 'react'
+import TokenGuard from '@/components/TokenGuard'
 import {WEDDING} from '@/lib/wedding-data'
 
-function EnvelopePage() {
+function EnvelopePage({guestName}: { guestName: string | null }) {
     const [opened, setOpened] = useState(false)
     const [ready, setReady] = useState(false)
     const [selecting, setSelecting] = useState(false)
     const [flapSrc, setFlapSrc] = useState('/envelope/top-outer.png')
     const router = useRouter()
     const searchParams = useSearchParams()
-    const name = searchParams.get('name')
+    const token = searchParams.get('token')
+    const name = guestName || searchParams.get('name')
+
     const flapCtrl = useAnimationControls()
     const card1Ctrl = useAnimationControls()
     const card2Ctrl = useAnimationControls()
@@ -62,7 +66,6 @@ function EnvelopePage() {
         if (!ready || selecting) return
         setReady(false)
 
-        // Swap to outer immediately before animating back
         setFlapSrc('/envelope/top-outer.png')
 
         await Promise.all([
@@ -92,7 +95,13 @@ function EnvelopePage() {
             }),
         ])
 
-        router.push(`/${section}${name ? `?name=${encodeURIComponent(name)}` : ''}`)
+        // Pass token OR name forward so guest identity persists
+        const query = token
+            ? `?token=${token}`
+            : name
+                ? `?name=${encodeURIComponent(name)}`
+                : ''
+        router.push(`/${section}${query}`)
     }
 
     const EW = 306
@@ -112,7 +121,7 @@ function EnvelopePage() {
         >
             <div style={{perspective: '600px', perspectiveOrigin: '50% 60%'}}>
 
-                {/* Invitee name — shown before opening */}
+                {/* Invitee name */}
                 <AnimatePresence>
                     {!opened && (
                         <motion.div
@@ -306,12 +315,23 @@ function CardInner({textColor, label}: { textColor: string; label: [string, stri
     )
 }
 
-import {Suspense} from 'react'
+function PageInner() {
+    const searchParams = useSearchParams()
+    const token = searchParams.get('token')
+
+    return (
+        <TokenGuard token={token} onVerified={(name) => (
+            <EnvelopePage guestName={name}/>
+        )}>
+            <EnvelopePage guestName={null}/>
+        </TokenGuard>
+    )
+}
 
 export default function Page() {
     return (
         <Suspense>
-            <EnvelopePage/>
+            <PageInner/>
         </Suspense>
     )
 }
