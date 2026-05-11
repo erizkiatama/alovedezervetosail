@@ -110,10 +110,47 @@ function EnvelopePage({guestName}: { guestName: string | null }) {
     return (
         <main
             className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
-            style={{background: '#C9F5BE'}}
+            style={{
+                backgroundImage: 'url(/texture.webp)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: '#e8e4dc',
+            }}
             onClick={ready ? closeEnvelope : undefined}
         >
-            <div style={{perspective: '600px', perspectiveOrigin: '50% 60%'}}>
+            {/* bunga 4 — top left */}
+            <img
+                src="/bunga-4.png"
+                alt=""
+                style={{
+                    position: 'absolute',
+                    width: 279,
+                    height: 279,
+                    left: -72,
+                    top: 226,
+                    transform: 'rotate(-11deg)',
+                    pointerEvents: 'none',
+                    zIndex: 0,
+                }}
+            />
+
+            {/* bunga 3 — bottom right */}
+            <img
+                src="/bunga-3.png"
+                alt=""
+                style={{
+                    position: 'absolute',
+                    width: 137,
+                    height: 137,
+                    right: -10,
+                    bottom: 200,
+                    transform: 'rotate(-6deg)',
+                    pointerEvents: 'none',
+                    zIndex: 2,
+                }}
+            />
+
+            <div style={{perspective: '600px', perspectiveOrigin: '50% 60%', position: 'relative', zIndex: 1}}>
 
                 {/* Invitee name */}
                 <AnimatePresence>
@@ -125,10 +162,10 @@ function EnvelopePage({guestName}: { guestName: string | null }) {
                             exit={{opacity: 0, y: -10}}
                             transition={{duration: 0.3, delay: 0.3}}
                         >
-                            <p className="font-body italic text-sm" style={{color: '#2d5a3d', letterSpacing: 1}}>
+                            <p className="font-body italic text-sm" style={{color: '#354B39', letterSpacing: 1}}>
                                 Kepada Yth.
                             </p>
-                            <p className="font-display text-lg tracking-widest mt-1" style={{color: '#1a3d28'}}>
+                            <p className="font-display text-lg tracking-widest mt-1" style={{color: '#2a3d2a'}}>
                                 {name || 'Tamu Undangan'}
                             </p>
                         </motion.div>
@@ -250,7 +287,7 @@ function EnvelopePage({guestName}: { guestName: string | null }) {
                         {!opened && (
                             <motion.p key="tap"
                                       className="font-body italic tracking-widest"
-                                      style={{color: '#2d5a3d', fontSize: 15}}
+                                      style={{color: '#354B39', fontSize: 15}}
                                       initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}}
                                       transition={{duration: 0.5, delay: 1}}
                             >
@@ -260,7 +297,7 @@ function EnvelopePage({guestName}: { guestName: string | null }) {
                         {ready && (
                             <motion.p key="choose"
                                       className="font-body italic tracking-widest"
-                                      style={{color: '#2d5a3d', fontSize: 15}}
+                                      style={{color: '#354B39', fontSize: 15}}
                                       initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}}
                                       transition={{duration: 0.4}}
                             >
@@ -276,10 +313,10 @@ function EnvelopePage({guestName}: { guestName: string | null }) {
                     animate={{opacity: opened ? 0 : 1}}
                     transition={{duration: 0.4}}
                 >
-                    <p className="font-display tracking-[4px] text-xs uppercase" style={{color: '#1a3d28'}}>
+                    <p className="font-display tracking-[4px] text-xs uppercase" style={{color: '#2a3d2a'}}>
                         {WEDDING.groom} & {WEDDING.bride}
                     </p>
-                    <p className="font-body italic text-xs mt-1" style={{color: '#2d5a3d', opacity: 0.8}}>
+                    <p className="font-body italic text-xs mt-1" style={{color: '#354B39', opacity: 0.8}}>
                         {WEDDING.date}
                     </p>
                 </motion.div>

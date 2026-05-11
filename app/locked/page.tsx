@@ -1,8 +1,14 @@
 'use client'
 
+import {Suspense} from 'react'
+import {useSearchParams} from 'next/navigation'
 import {motion} from 'framer-motion'
 
-export default function LockedPage() {
+function LockedContent() {
+    const searchParams = useSearchParams()
+    const reason = searchParams.get('reason')
+    const isDeviceMismatch = reason === 'device_mismatch'
+
     return (
         <main
             className="min-h-screen flex flex-col items-center justify-center px-8"
@@ -30,10 +36,13 @@ export default function LockedPage() {
 
                 <div>
                     <h1 className="font-display text-2xl mb-3" style={{color: '#f5f0e8', letterSpacing: '2px'}}>
-                        Private Invitation
+                        {isDeviceMismatch ? 'Private Invitation' : 'Invitation Not Found'}
                     </h1>
                     <p className="font-body italic text-sm leading-relaxed" style={{color: '#8aaa7a', fontSize: 15}}>
-                        This link only can be opened by the intended invitee.
+                        {isDeviceMismatch
+                            ? 'This link has already been opened on another device and cannot be accessed from here.'
+                            : 'It seems you don\'t have a valid invitation to access this page.'
+                        }
                     </p>
                 </div>
 
@@ -50,5 +59,13 @@ export default function LockedPage() {
                 </p>
             </motion.div>
         </main>
+    )
+}
+
+export default function LockedPage() {
+    return (
+        <Suspense>
+            <LockedContent/>
+        </Suspense>
     )
 }

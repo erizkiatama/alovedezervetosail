@@ -1,85 +1,60 @@
-'use client'
+import {NextRequest, NextResponse} from 'next/server'
+import {createClient} from '@supabase/supabase-js'
 
-import {useEffect, useState} from 'react'
-import {useRouter} from 'next/navigation'
-import {motion} from 'framer-motion'
+const db = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!
+)
 
-type Props = {
-    name: string | null
-    children: React.ReactNode
-    onVerified?: (name: string) => React.ReactNode
-}
+export async function POST(req: NextRequest) {
+    const {name, fingerprint} = await req.json()
 
-export default function TokenGuard({name, children, onVerified}: Props) {
-    const [status, setStatus] = useState<'checking' | 'valid' | 'no_name'>('checking')
-    const [guestName, setGuestName] = useState<string | null>(null)
-    const router = useRouter()
-
-    useEffect(() => {
-        if (!name) {
-            setStatus('no_name')
-            return
-        }
-
-        async function verify() {
-            try {
-                const FingerprintJS = await import('@fingerprintjs/fingerprintjs')
-                const fp = await FingerprintJS.default.load()
-                const result = await fp.get()
-                const fingerprint = result.visitorId
-
-                const res = await fetch('/api/verify-token', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({name, fingerprint}),
-                })
-                const data = await res.json()
-
-                if (data.valid) {
-                    setGuestName(data.name)
-                    setStatus('valid')
-                } else {
-                    router.replace('/locked')
-                }
-            } catch (e) {
-                console.error(e)
-                setStatus('no_name')
-            }
-        }
-
-        verify()
-    }, [name])
-
-    if (status === 'checking') {
-        return (
-            <main className="min-h-screen flex flex-col items-center justify-center" style={{background: '#C9F5BE'}}>
-                <motion.div
-                    className="flex flex-col items-center gap-4"
-                    initial={{opacity: 0}}
-                    animate={{opacity: 1}}
-                    transition={{duration: 0.5}}
-                >
-                    <motion.div
-                        animate={{rotate: 360}}
-                        transition={{duration: 2, repeat: Infinity, ease: 'linear'}}
-                    >
-                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                            <rect x="4" y="10" width="32" height="22" rx="3" stroke="#2d5a3d" strokeWidth="1.5"
-                                  fill="none"/>
-                            <path d="M4 13L20 24L36 13" stroke="#2d5a3d" strokeWidth="1.5" strokeLinecap="round"/>
-                        </svg>
-                    </motion.div>
-                    <p className="font-body italic text-sm" style={{color: '#2d5a3d', letterSpacing: 2}}>
-                        Opening invitation...
-                    </p>
-                </motion.div>
-            </main>
-        )
+    if (!name || !fingerprint) {
+        return NextResponse.json({valid: false, reason: 'missing'}, {status: 400})
     }
 
-    if (status === 'valid' && onVerified && guestName) {
-        return <>{onVerified(guestName)}</>
+    const {data: guest, error} = await db
+        .from('guests')
+        .select('*')
+        .ilike('name', name.trim())
+        .single()
+
+    if (error || !guest) {
+        return NextResponse.json({valid: false, reason: 'invalid'})
     }
 
-    return <>{children}</>
+    const fingerprints: string[] = guest.fingerprints ?? []
+
+    // Already registered on this device — let in
+    if (fingerprints.includes(fingerprint)) {
+        return NextResponse.json({valid: true, name: guest.name, lenient: guest.lenient})
+    }
+
+    // Lenient group — always allow new devices in
+    if (guest.lenient) {
+        await db
+            .from('guests')
+            .update({
+                fingerprints: [...fingerprints, fingerprint],
+                first_opened_at: guest.first_opened_at ?? new Date().toISOString(),
+            })
+            .eq('id', guest.id)
+        return NextResponse.json({valid: true, name: guest.name, lenient: true})
+    }
+
+    // Strict — only allow if no fingerprint registered yet (first open)
+    if (fingerprints.length >= 1) {
+        return NextResponse.json({valid: false, reason: 'device_mismatch'})
+    }
+
+    // First time opening — register fingerprint
+    await db
+        .from('guests')
+        .update({
+            fingerprints: [fingerprint],
+            first_opened_at: new Date().toISOString(),
+        })
+        .eq('id', guest.id)
+
+    return NextResponse.json({valid: true, name: guest.name, lenient: false})
 }
