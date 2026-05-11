@@ -5,19 +5,19 @@ import {useRouter} from 'next/navigation'
 import {motion} from 'framer-motion'
 
 type Props = {
-    token: string | null
+    name: string | null
     children: React.ReactNode
     onVerified?: (name: string) => React.ReactNode
 }
 
-export default function TokenGuard({token, children, onVerified}: Props) {
-    const [status, setStatus] = useState<'checking' | 'valid' | 'no_token'>('checking')
+export default function TokenGuard({name, children, onVerified}: Props) {
+    const [status, setStatus] = useState<'checking' | 'valid' | 'no_name'>('checking')
     const [guestName, setGuestName] = useState<string | null>(null)
     const router = useRouter()
 
     useEffect(() => {
-        if (!token) {
-            setStatus('no_token')
+        if (!name) {
+            setStatus('no_name')
             return
         }
 
@@ -31,7 +31,7 @@ export default function TokenGuard({token, children, onVerified}: Props) {
                 const res = await fetch('/api/verify-token', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({token, fingerprint}),
+                    body: JSON.stringify({name, fingerprint}),
                 })
                 const data = await res.json()
 
@@ -43,12 +43,12 @@ export default function TokenGuard({token, children, onVerified}: Props) {
                 }
             } catch (e) {
                 console.error(e)
-                setStatus('no_token')
+                setStatus('no_name')
             }
         }
 
         verify()
-    }, [token])
+    }, [name])
 
     if (status === 'checking') {
         return (
@@ -77,11 +77,9 @@ export default function TokenGuard({token, children, onVerified}: Props) {
         )
     }
 
-    // Token verified — render with guest name
     if (status === 'valid' && onVerified && guestName) {
         return <>{onVerified(guestName)}</>
     }
 
-    // No token or fallback
     return <>{children}</>
 }

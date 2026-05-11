@@ -15,7 +15,6 @@ function EnvelopePage({guestName}: { guestName: string | null }) {
     const [flapSrc, setFlapSrc] = useState('/envelope/top-outer.png')
     const router = useRouter()
     const searchParams = useSearchParams()
-    const token = searchParams.get('token')
     const name = guestName || searchParams.get('name')
 
     const flapCtrl = useAnimationControls()
@@ -95,12 +94,7 @@ function EnvelopePage({guestName}: { guestName: string | null }) {
             }),
         ])
 
-        // Pass token OR name forward so guest identity persists
-        const query = token
-            ? `?token=${token}`
-            : name
-                ? `?name=${encodeURIComponent(name)}`
-                : ''
+        const query = name ? `?name=${encodeURIComponent(name)}` : ''
         router.push(`/${section}${query}`)
     }
 
@@ -317,11 +311,11 @@ function CardInner({textColor, label}: { textColor: string; label: [string, stri
 
 function PageInner() {
     const searchParams = useSearchParams()
-    const token = searchParams.get('token')
+    const name = searchParams.get('name')
 
     return (
-        <TokenGuard token={token} onVerified={(name) => (
-            <EnvelopePage guestName={name}/>
+        <TokenGuard name={name} onVerified={(guestName) => (
+            <EnvelopePage guestName={guestName}/>
         )}>
             <EnvelopePage guestName={null}/>
         </TokenGuard>
