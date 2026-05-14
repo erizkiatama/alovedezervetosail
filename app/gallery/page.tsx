@@ -27,48 +27,75 @@ function useScale(designWidth = 402) {
     return scale
 }
 
-// Photo slot — placed behind stamp frame
-function Photo({src, style, shape = 'rect'}: {
-    src?: string | null
-    style: React.CSSProperties
-    shape?: 'rect' | 'oval' | 'circle'
+// Stamp = frame image + photo inside, all in one component
+// The stamp PNG is on top with mixBlendMode:'screen' (removes black bg)
+// Photo sits behind it
+function Stamp({
+                   frameUrl,
+                   photoUrl,
+                   left,
+                   top,
+                   width,
+                   height,
+                   photoLeft,
+                   photoTop,
+                   photoWidth,
+                   photoHeight,
+                   shape = 'rect',
+                   zoom = 1,
+                   photoPosition = 'center'
+               }: {
+    frameUrl: string
+    photoUrl?: string | null
+    left: number
+    top: number
+    width: number
+    height: number
+    photoLeft: number
+    photoTop: number
+    photoWidth: number
+    photoHeight: number
+    shape?: 'rect' | 'circle' | 'oval'
+    zoom?: number
+    photoPosition?: string
 }) {
     return (
-        <div style={{
-            position: 'absolute',
-            borderRadius: shape === 'rect' ? 4 : '50%',
-            overflow: 'hidden',
-            background: 'rgba(200,210,200,0.15)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            ...style,
-        }}>
-            {src
-                ? <img src={src} alt="" style={{width: '100%', height: '100%', objectFit: 'cover'}}/>
-                : <svg width="22" height="22" viewBox="0 0 28 28" fill="none" opacity={0.2}>
-                    <rect x="2" y="5" width="24" height="18" rx="3" stroke="#fff" strokeWidth="1.2"/>
-                    <circle cx="14" cy="14" r="4" stroke="#fff" strokeWidth="1.2"/>
-                    <circle cx="21" cy="9" r="1.5" fill="#fff"/>
-                </svg>
-            }
-        </div>
-    )
-}
-
-// Stamp frame — on top of photo
-function StampImg({src, style}: { src: string, style: React.CSSProperties }) {
-    return (
-        <img src={src} alt="" style={{
-            position: 'absolute',
-            mixBlendMode: 'screen',
-            ...style,
-        }}/>
+        <>
+            <img src={frameUrl} alt="" style={{
+                position: 'absolute',
+                left, top, width, height,
+                mixBlendMode: 'screen',
+            }}/>
+            <div style={{
+                position: 'absolute',
+                left: photoLeft, top: photoTop,
+                width: photoWidth, height: photoHeight,
+                borderRadius: shape === 'rect' ? 4 : '50%',
+                overflow: 'hidden',
+                background: 'rgba(180,195,180,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+                {photoUrl
+                    ? <img src={photoUrl} alt="" style={{
+                        width: '100%', height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: photoPosition,
+                        transform: `scale(${zoom})`,
+                        transformOrigin: 'center',
+                    }}/>
+                    : <svg width="22" height="22" viewBox="0 0 28 28" fill="none" opacity={0.2}>
+                        <rect x="2" y="5" width="24" height="18" rx="3" stroke="#fff" strokeWidth="1.2"/>
+                        <circle cx="14" cy="14" r="4" stroke="#fff" strokeWidth="1.2"/>
+                        <circle cx="21" cy="9" r="1.5" fill="#fff"/>
+                    </svg>
+                }
+            </div>
+        </>
     )
 }
 
 const star = {
-    width: 19,
-    height: 19,
-    background: '#FFFBED',
+    width: 19, height: 19, background: '#FFFBED',
     clipPath: 'polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)'
 }
 
@@ -81,23 +108,34 @@ function GalleryContent() {
     const W = 402
     const H = 3200
 
+    // Photos — replace null with Supabase URLs
+    const photos = {
+        p1: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-1.jpg',
+        p2: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-2.jpg',
+        p3: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-3.jpg',
+        p4: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-4.jpg',
+        p5: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-5.jpg',
+        p6: null,
+        p7: null,
+        p8: null,
+        p9: null,
+        p10: null,
+        p11: null,
+        p12: null,
+        filmBg: null, // full background beach photo
+    }
+
     return (
         <main style={{background: '#354B39', color: '#FFFFFF', display: 'flex', justifyContent: 'center'}}>
             <div style={{width: '100%', maxWidth: W, height: H * scale, overflow: 'hidden', position: 'relative'}}>
                 <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: '50%',
-                    marginLeft: `-${W / 2}px`,
-                    width: W,
-                    height: H,
-                    transform: `scale(${scale})`,
-                    transformOrigin: 'top center'
+                    position: 'absolute', top: 0, left: '50%', marginLeft: `-${W / 2}px`,
+                    width: W, height: H,
+                    transform: `scale(${scale})`, transformOrigin: 'top center'
                 }}>
 
                     {/* ── BACKGROUNDS ── */}
                     <div style={{position: 'absolute', inset: 0, background: '#354B39'}}/>
-                    {/* Grey-green: top 1159, height 700 (expanded to fit stamps) */}
                     <div style={{
                         position: 'absolute',
                         left: -75,
@@ -106,13 +144,12 @@ function GalleryContent() {
                         height: 510,
                         background: 'rgba(128,140,131,0.86)'
                     }}/>
-                    {/* Dark green: top 1859, height 900 */}
                     <div style={{
                         position: 'absolute',
                         left: -75,
                         top: 1670,
                         width: 536,
-                        height: 900,
+                        height: 1530,
                         background: '#223726'
                     }}/>
 
@@ -126,7 +163,7 @@ function GalleryContent() {
                         Gallery
                     </motion.div>
 
-                    {/* Star divider: top 188/198 */}
+                    {/* Star divider */}
                     <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible">
                         <div style={{position: 'absolute', left: 15, top: 188, ...star}}/>
                         <div style={{position: 'absolute', left: 369, top: 188, ...star}}/>
@@ -139,7 +176,7 @@ function GalleryContent() {
                         }}/>
                     </motion.div>
 
-                    {/* The Film: top 251 */}
+                    {/* The Film */}
                     <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible"
                                 style={{
                                     position: 'absolute', left: 104, top: 251, width: 197, height: 57,
@@ -149,9 +186,8 @@ function GalleryContent() {
                         The Film
                     </motion.div>
 
-                    {/* Film stamp: left 33, top 311, 336x247 */}
+                    {/* Film stamp */}
                     <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible">
-                        {/* Video placeholder */}
                         <div style={{
                             position: 'absolute',
                             left: 67,
@@ -168,10 +204,17 @@ function GalleryContent() {
                                 <path d="M16 13L30 20L16 27V13Z" fill="white" opacity={0.5}/>
                             </svg>
                         </div>
-                        <StampImg src="/Stamp-1.png" style={{left: 33, top: 311, width: 336, height: 247}}/>
+                        <img src="/Stamp-1.png" alt="" style={{
+                            position: 'absolute',
+                            left: 33,
+                            top: 311,
+                            width: 336,
+                            height: 247,
+                            mixBlendMode: 'screen'
+                        }}/>
                     </motion.div>
 
-                    {/* ── THE PHOTOS: top 639 ── */}
+                    {/* The Photos title */}
                     <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible"
                                 style={{
                                     position: 'absolute', left: 111, top: 639, width: 182, height: 72,
@@ -181,7 +224,7 @@ function GalleryContent() {
                         The Photos
                     </motion.div>
 
-                    {/* Star divider: top 711/721 */}
+                    {/* Star divider */}
                     <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible">
                         <div style={{position: 'absolute', left: 15, top: 711, ...star}}/>
                         <div style={{position: 'absolute', left: 369, top: 711, ...star}}/>
@@ -194,119 +237,117 @@ function GalleryContent() {
                         }}/>
                     </motion.div>
 
-                    {/* ── PHOTO ROW 1 (top ~763) ── */}
+                    {/* ── ROW 1: circle + landscape + tall oval ── */}
                     <motion.div custom={6} variants={fadeUp} initial="hidden" animate="visible">
-                        {/* Ellipse 3 photo: left 21, top 778, 116x119 */}
-                        <Photo style={{left: 21, top: 778, width: 116, height: 119}} shape="circle"
-                               src="https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-1.jpg"/>
-                        <StampImg src="/Stamp-5.png" style={{left: 4, top: 763, width: 150, height: 150}}/>
-
-                        {/* Rectangle 16 photo: left 161, top 795, 95x98 */}
-                        <Photo style={{left: 161, top: 795, width: 95, height: 98}}/>
-                        <StampImg src="/Stamp-2.png" style={{left: 107, top: 774, width: 194, height: 142}}/>
-
-                        {/* Ellipse 4 photo: left 276, top 761, 104x162 */}
-                        <Photo style={{left: 276, top: 761, width: 104, height: 162}} shape="oval"/>
-                        <StampImg src="/Stamp-4.png" style={{left: 265, top: 748, width: 125, height: 185}}/>
+                        <Stamp frameUrl="/Stamp-5.png" photoUrl={photos.p1}
+                               left={4} top={763} width={150} height={150}
+                               photoLeft={21} photoTop={778} photoWidth={116} photoHeight={119}
+                               shape="circle" zoom={1.25}/>
+                        <Stamp frameUrl="/Stamp-2.png" photoUrl={photos.p2}
+                               left={107} top={774} width={194} height={142}
+                               photoLeft={161} photoTop={795} photoWidth={95} photoHeight={98} photoPosition="0% 15%"/>
+                        <Stamp frameUrl="/Stamp-4.png" photoUrl={photos.p3}
+                               left={265} top={748} width={125} height={185}
+                               photoLeft={276} photoTop={761} photoWidth={104} photoHeight={162}
+                               shape="oval" zoom={1.5} photoPosition='-25% 0%'/>
                     </motion.div>
 
-                    {/* ── PHOTO ROW 2 (top ~904) ── */}
+                    {/* ── ROW 2: large landscape + rubber stamp + small ── */}
                     <motion.div custom={7} variants={fadeUp} initial="hidden" animate="visible">
-                        {/* Rectangle 14 photo: left 18, top 938, 233x143 */}
-                        <Photo style={{left: 18, top: 938, width: 233, height: 143}}/>
-                        <StampImg src="/Stamp-1.png" style={{left: -11, top: 904, width: 282, height: 208}}/>
-
-                        {/* Rubber stamp decoration */}
+                        <Stamp frameUrl="/Stamp-1.png" photoUrl={photos.p4}
+                               left={-11} top={904} width={282} height={208}
+                               photoLeft={18} photoTop={938} photoWidth={233} photoHeight={143} photoPosition='0% 62.5%'/>
                         <img src="/rubber-stamp.png" alt="" style={{
-                            position: 'absolute', left: -23, top: 1039,
-                            width: 159, height: 93,
-                            transform: 'rotate(-16.27deg)',
-                            opacity: 0.85, mixBlendMode: 'screen',
+                            position: 'absolute', left: -23, top: 1039, width: 159, height: 93,
+                            transform: 'rotate(-16.27deg)', opacity: 0.85, mixBlendMode: 'screen',
                         }}/>
-
-                        {/* Rectangle 15 photo: left 279, top 968, 114x120 */}
-                        <Photo style={{left: 279, top: 968, width: 114, height: 120}}/>
-                        <StampImg src="/Stamp-2.png" style={{left: 216, top: 944, width: 227, height: 167}}/>
+                        <Stamp frameUrl="/Stamp-2.png" photoUrl={photos.p5}
+                               left={216} top={944} width={227} height={167}
+                               photoLeft={279} photoTop={968} photoWidth={114} photoHeight={120} zoom={1.5}/>
                     </motion.div>
 
-                    {/* ── GREY-GREEN SECTION (top 1159) ── */}
+                    {/* ── GREY-GREEN: ROW 3 ── */}
                     <motion.div custom={8} variants={fadeUp} initial="hidden" animate="visible">
-                        {/* Row 1: Stamp-3 landscape left + Stamp-1 portrait right */}
-                        <Photo style={{left: 23, top: 1192, width: 216, height: 106}}/>
-                        <StampImg src="/Stamp-3.png" style={{left: 0, top: 1166, width: 261, height: 154}}/>
-
-                        <Photo style={{left: 288, top: 1180, width: 89, height: 148}}/>
-                        <StampImg src="/Stamp-1.png" style={{left: 266, top: 1152, width: 130, height: 210}}/>
+                        <Stamp frameUrl="/Stamp-3.png" photoUrl={photos.p6}
+                               left={0} top={1166} width={261} height={154}
+                               photoLeft={23} photoTop={1192} photoWidth={216} photoHeight={106}/>
+                        <Stamp frameUrl="/Stamp-1.png" photoUrl={photos.p6}
+                               left={266} top={1152} width={130} height={210}
+                               photoLeft={288} photoTop={1180} photoWidth={89} photoHeight={148}/>
                     </motion.div>
 
+                    {/* ── GREY-GREEN: ROW 4 ── */}
                     <motion.div custom={9} variants={fadeUp} initial="hidden" animate="visible">
-                        {/* Row 2: Stamp-5 circle left + Stamp-4 tall oval right */}
-                        <Photo style={{left: 41, top: 1355, width: 147, height: 150}} shape="circle"/>
-                        <StampImg src="/Stamp-5.png" style={{left: 20, top: 1315, width: 186, height: 185}}/>
-
-                        <Photo style={{left: 222, top: 1370, width: 155, height: 240}} shape="oval"/>
-                        <StampImg src="/Stamp-4.png" style={{left: 200, top: 1363, width: 200, height: 300}}/>
+                        <Stamp frameUrl="/Stamp-5.png" photoUrl={photos.p7}
+                               left={20} top={1315} width={186} height={185}
+                               photoLeft={41} photoTop={1355} photoWidth={147} photoHeight={150}
+                               shape="circle"/>
+                        <Stamp frameUrl="/Stamp-4.png" photoUrl={photos.p8}
+                               left={200} top={1363} width={200} height={300}
+                               photoLeft={222} photoTop={1370} photoWidth={155} photoHeight={240}
+                               shape="oval"/>
                     </motion.div>
 
+                    {/* ── GREY-GREEN: ROW 5 ── */}
                     <motion.div custom={10} variants={fadeUp} initial="hidden" animate="visible">
-                        {/* Row 3: Stamp-2 landscape */}
-                        <Photo style={{left: 50, top: 1525, width: 125, height: 125}}/>
-                        <StampImg src="/Stamp-2.png" style={{left: -15, top: 1500, width: 245, height: 180}}/>
+                        <Stamp frameUrl="/Stamp-2.png" photoUrl={photos.p9}
+                               left={-15} top={1500} width={245} height={180}
+                               photoLeft={50} photoTop={1525} photoWidth={125} photoHeight={125}/>
                     </motion.div>
 
-                    {/* ── DARK GREEN SECTION (top 1859) ── */}
+                    {/* ── DARK GREEN: ROW 6 ── */}
                     <motion.div custom={11} variants={fadeUp} initial="hidden" animate="visible">
-                        {/* Row 4: Stamp-3 portrait left + Stamp-4 landscape right */}
-                        <Photo style={{left: 18, top: 1890, width: 127, height: 220}}/>
-                        <StampImg src="/Stamp-3.png" style={{left: -2, top: 1870, width: 165, height: 270}}/>
-
-                        <Photo style={{left: 185, top: 1900, width: 190, height: 120}} shape="oval"/>
-                        <StampImg src="/Stamp-4.png" style={{left: 168, top: 1880, width: 225, height: 160}}/>
+                        <Stamp frameUrl="/Stamp-3.png" photoUrl={photos.p9}
+                               left={-2} top={1870} width={165} height={270}
+                               photoLeft={18} photoTop={1890} photoWidth={127} photoHeight={220}/>
+                        <Stamp frameUrl="/Stamp-4.png" photoUrl={photos.p10}
+                               left={168} top={1880} width={225} height={160}
+                               photoLeft={185} photoTop={1900} photoWidth={190} photoHeight={120}
+                               shape="oval"/>
                     </motion.div>
 
+                    {/* ── DARK GREEN: ROW 7 ── */}
                     <motion.div custom={12} variants={fadeUp} initial="hidden" animate="visible">
-                        {/* Row 5: Stamp-1 right + Stamp-2 left + Stamp-5 right */}
-                        <Photo style={{left: 192, top: 2090, width: 187, height: 113}}/>
-                        <StampImg src="/Stamp-1.png" style={{left: 170, top: 2062, width: 227, height: 167}}/>
-
-                        <Photo style={{left: 20, top: 2190, width: 143, height: 143}}/>
-                        <StampImg src="/Stamp-2.png" style={{left: -60, top: 2155, width: 294, height: 216}}/>
-
-                        <Photo style={{left: 210, top: 2175, width: 155, height: 155}} shape="circle"/>
-                        <StampImg src="/Stamp-5.png" style={{left: 193, top: 2158, width: 192, height: 191}}/>
+                        <Stamp frameUrl="/Stamp-1.png" photoUrl={photos.p10}
+                               left={170} top={2062} width={227} height={167}
+                               photoLeft={192} photoTop={2090} photoWidth={187} photoHeight={113}/>
+                        <Stamp frameUrl="/Stamp-2.png" photoUrl={photos.p11}
+                               left={-60} top={2155} width={294} height={216}
+                               photoLeft={20} photoTop={2190} photoWidth={143} photoHeight={143}/>
+                        <Stamp frameUrl="/Stamp-5.png" photoUrl={photos.p12}
+                               left={193} top={2158} width={192} height={191}
+                               photoLeft={210} photoTop={2175} photoWidth={155} photoHeight={155}
+                               shape="circle"/>
                     </motion.div>
 
-                    {/* ── FULL BG PHOTO: top 2400 ── */}
+                    {/* ── FULL BG PHOTO ── */}
                     <div style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 2400,
-                        width: 402,
-                        height: 500,
-                        background: '#2a3a2a',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        opacity: 0.6
+                        position: 'absolute', left: 0, top: 2400, width: 402, height: 500,
+                        background: photos.filmBg ? undefined : '#1e2e1e',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}>
-                        <svg width="40" height="40" viewBox="0 0 28 28" fill="none" opacity={0.3}>
-                            <rect x="2" y="5" width="24" height="18" rx="3" stroke="#fff" strokeWidth="1.2"/>
-                            <circle cx="14" cy="14" r="4" stroke="#fff" strokeWidth="1.2"/>
-                        </svg>
+                        {photos.filmBg
+                            ? <img src={photos.filmBg} alt=""
+                                   style={{width: '100%', height: '100%', objectFit: 'cover'}}/>
+                            : <svg width="40" height="40" viewBox="0 0 28 28" fill="none" opacity={0.2}>
+                                <rect x="2" y="5" width="24" height="18" rx="3" stroke="#fff" strokeWidth="1.2"/>
+                                <circle cx="14" cy="14" r="4" stroke="#fff" strokeWidth="1.2"/>
+                            </svg>
+                        }
                     </div>
 
-                    {/* Ezra & Salsa: top 2830 */}
+                    {/* Ezra & Salsa */}
                     <div style={{
-                        position: 'absolute', left: 93, top: 2830, width: 220, height: 72,
+                        position: 'absolute', left: 93, top: 2930, width: 220, height: 72,
                         fontFamily: "'Lovers Quarrel', cursive", fontSize: 64, lineHeight: '72px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF'
                     }}>
                         Ezra &amp; Salsa
                     </div>
 
-                    {/* ── FOOTER: top 3000 ── */}
+                    {/* Footer */}
                     <div style={{
-                        position: 'absolute', left: 14, top: 3000,
+                        position: 'absolute', left: 14, top: 3020,
                         fontFamily: "var(--font-imprint), 'Cormorant Garamond', serif",
                         fontSize: 48, lineHeight: '57px', color: '#FFFFFF'
                     }}>ES
@@ -314,18 +355,18 @@ function GalleryContent() {
                     <div style={{
                         position: 'absolute',
                         left: 81,
-                        top: 3048,
+                        top: 3066,
                         width: 293,
                         borderTop: '1px solid #FFFEEE'
                     }}/>
                     <div style={{
-                        position: 'absolute', left: 291, top: 3051,
+                        position: 'absolute', left: 291, top: 3069,
                         fontFamily: "'Abhaya Libre', serif", fontSize: 14, color: '#FFFFFF'
                     }}>EZRA &amp; SALSA
                     </div>
 
                     {/* Go Back */}
-                    <div style={{position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 3110}}>
+                    <div style={{position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 3130}}>
                         <Link href={backHref}>
                             <div
                                 className="flex flex-col items-center gap-2 opacity-50 active:opacity-100 transition-opacity">
