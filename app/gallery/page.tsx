@@ -4,7 +4,6 @@ import {Suspense} from 'react'
 import {motion} from 'framer-motion'
 import Link from 'next/link'
 import {useSearchParams} from 'next/navigation'
-import {WEDDING} from '@/lib/wedding-data'
 
 const fadeUp = {
     hidden: {opacity: 0, y: 24},
@@ -14,57 +13,53 @@ const fadeUp = {
     })
 }
 
-const photos = [
-    {id: 1, src: null as string | null, rotate: -13, left: -15, width: 164, height: 188, photoH: 138},
-    {id: 2, src: null as string | null, rotate: 3, left: null, width: 187, height: 215, photoH: 158},
-    {id: 3, src: null as string | null, rotate: -8, left: -15, width: 164, height: 188, photoH: 138},
-    {id: 4, src: null as string | null, rotate: 6, left: null, width: 187, height: 215, photoH: 158},
-]
-
-function Polaroid({photo, index}: { photo: typeof photos[0], index: number }) {
-    const isRight = photo.left === null
+function Stamp({frame, photo, width, height, clip = 'rect'}: {
+    frame: string
+    photo?: string | null
+    width: number
+    height: number
+    clip?: 'rect' | 'oval' | 'circle'
+}) {
+    const borderRadius = clip === 'rect' ? 6 : '50%'
+    // Inset % for each stamp type to align photo with the hole
+    const inset = clip === 'rect' ? '11% 9%' : '8%'
     return (
-        <motion.div
-            custom={index + 6}
-            variants={fadeUp}
-            initial="hidden"
-            animate="visible"
-            style={{
-                position: 'relative',
-                left: isRight ? 'auto' : photo.left!,
-                right: isRight ? -15 : 'auto',
-                marginLeft: isRight ? 'auto' : 0,
-                width: photo.width,
-                height: photo.height,
-                background: '#FFFFFF',
-                borderRadius: 4,
-                boxShadow: '0 6px 28px rgba(0,0,0,0.4)',
-                padding: 10,
-                paddingBottom: 36,
-                flexShrink: 0,
-                transform: `rotate(${photo.rotate}deg)`,
-            }}
-        >
+        <div style={{position: 'relative', width, height, flexShrink: 0}}>
             <div style={{
-                width: '100%',
-                height: photo.photoH,
-                borderRadius: 2,
+                position: 'absolute', inset,
+                borderRadius,
                 overflow: 'hidden',
-                background: photo.src ? undefined : '#c8d8b8',
+                background: 'rgba(255,255,255,0.1)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-                {photo.src
-                    ? <img src={photo.src} alt="" style={{width: '100%', height: '100%', objectFit: 'cover'}}/>
-                    : (
-                        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" opacity={0.4}>
-                            <rect x="2" y="5" width="24" height="18" rx="3" stroke="#354B39" strokeWidth="1.2"/>
-                            <circle cx="14" cy="14" r="4" stroke="#354B39" strokeWidth="1.2"/>
-                            <circle cx="21" cy="9" r="1.5" fill="#354B39"/>
-                        </svg>
-                    )
+                {photo
+                    ? <img src={photo} alt="" style={{width: '100%', height: '100%', objectFit: 'cover'}}/>
+                    : <svg width="22" height="22" viewBox="0 0 28 28" fill="none" opacity={0.25}>
+                        <rect x="2" y="5" width="24" height="18" rx="3" stroke="#fff" strokeWidth="1.2"/>
+                        <circle cx="14" cy="14" r="4" stroke="#fff" strokeWidth="1.2"/>
+                        <circle cx="21" cy="9" r="1.5" fill="#fff"/>
+                    </svg>
                 }
             </div>
-        </motion.div>
+            <img src={frame} alt="" style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}/>
+        </div>
+    )
+}
+
+const star = {
+    width: 19,
+    height: 19,
+    background: '#FFFBED',
+    clipPath: 'polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)'
+}
+
+function Divider() {
+    return (
+        <div className="flex items-center my-5 px-5">
+            <div style={star}/>
+            <div className="flex-1 mx-2" style={{height: 1, background: '#FFFFFF'}}/>
+            <div style={star}/>
+        </div>
     )
 }
 
@@ -74,121 +69,192 @@ function GalleryContent() {
     const backHref = `/?opened=true${name ? `&name=${encodeURIComponent(name)}` : ''}`
 
     return (
-        <main
-            className="min-h-screen relative overflow-x-hidden"
-            style={{background: '#354B39', color: '#FFFFFF'}}
-        >
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <img src="/bunga-2.png" alt="" style={{
-                    position: 'absolute',
-                    width: 167,
-                    height: 167,
-                    left: -24,
-                    top: 500,
-                    transform: 'rotate(-16deg)',
-                    opacity: 0.8
-                }}/>
-                <img src="/bunga-2.png" alt="" style={{
-                    position: 'absolute',
-                    width: 167,
-                    height: 167,
-                    left: -24,
-                    top: 1000,
-                    transform: 'rotate(-16deg)',
-                    opacity: 0.8
-                }}/>
-                <img src="/bunga-4.png" alt="" style={{
-                    position: 'absolute',
-                    width: 181,
-                    height: 181,
-                    right: -20,
-                    top: 250,
-                    transform: 'rotate(31deg)',
-                    opacity: 0.8
-                }}/>
-                <img src="/bunga-4.png" alt="" style={{
-                    position: 'absolute',
-                    width: 181,
-                    height: 181,
-                    right: -20,
-                    top: 750,
-                    transform: 'rotate(31deg)',
-                    opacity: 0.8
-                }}/>
-            </div>
+        <main style={{color: '#FFFFFF', overflowX: 'hidden'}}>
 
-            <div className="relative z-10 pb-20" style={{maxWidth: 402, margin: '0 auto', padding: '0 20px'}}>
+            {/* ═══ SECTION 1 — dark green ═══ */}
+            <div style={{background: '#354B39'}}>
+                <div style={{maxWidth: 402, margin: '0 auto', padding: '0 16px', paddingBottom: 32}}>
 
-                <motion.h1
-                    className="text-center mt-16 mb-3"
-                    style={{fontFamily: "'Lovers Quarrel', cursive", fontSize: 96, lineHeight: '108px'}}
-                    custom={0} variants={fadeUp} initial="hidden" animate="visible"
-                >
-                    Gallery
-                </motion.h1>
+                    {/* Gallery title */}
+                    <motion.h1 className="text-center pt-14"
+                               style={{
+                                   fontFamily: "'Lovers Quarrel', cursive",
+                                   fontSize: 96,
+                                   lineHeight: '108px',
+                                   marginBottom: 0
+                               }}
+                               custom={0} variants={fadeUp} initial="hidden" animate="visible">
+                        Gallery
+                    </motion.h1>
+                    <Divider/>
 
-                <motion.div className="flex items-center mb-12" custom={1} variants={fadeUp} initial="hidden"
-                            animate="visible">
-                    <div style={{
-                        width: 19,
-                        height: 19,
-                        background: '#FFFBED',
-                        clipPath: 'polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)'
-                    }}/>
-                    <div className="flex-1 mx-2" style={{height: 1, background: '#FFFFFF'}}/>
-                    <div style={{
-                        width: 19,
-                        height: 19,
-                        background: '#FFFBED',
-                        clipPath: 'polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)'
-                    }}/>
-                </motion.div>
+                    {/* The Film */}
+                    <motion.h2 className="text-center mb-5"
+                               style={{
+                                   fontFamily: "var(--font-imprint), 'Cormorant Garamond', serif",
+                                   fontSize: 48,
+                                   lineHeight: '57px'
+                               }}
+                               custom={1} variants={fadeUp} initial="hidden" animate="visible">
+                        The Film
+                    </motion.h2>
 
-                <div style={{display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 60}}>
-                    {photos.map((photo, i) => (
-                        <Polaroid key={photo.id} photo={photo} index={i}/>
-                    ))}
-                </div>
-
-                <motion.div className="flex items-center gap-3 mb-12" custom={11} variants={fadeUp} initial="hidden"
-                            animate="visible">
-                    <span style={{
-                        fontFamily: "var(--font-imprint), 'Cormorant Garamond', serif",
-                        fontSize: 48,
-                        color: '#FFFFFF'
-                    }}>ES</span>
-                    <div className="flex-1" style={{height: 1, background: '#FFFEEE'}}/>
-                    <span style={{
-                        fontFamily: "'Abhaya Libre', serif",
-                        fontSize: 14,
-                        color: '#FFFFFF'
-                    }}>#alovedEZervetoSAil</span>
-                </motion.div>
-
-                <motion.div
-                    className="flex flex-col items-center mb-6"
-                    custom={12} variants={fadeUp} initial="hidden" animate="visible"
-                >
-                    <Link href={backHref}>
-                        <div
-                            className="flex flex-col items-center gap-2 opacity-50 active:opacity-100 transition-opacity">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 19V5M5 12L12 5L19 12" stroke="#FFFFFF" strokeWidth="1.5"
-                                      strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            <span style={{
-                                fontFamily: "'Times New Roman', serif",
-                                fontSize: 12,
-                                color: '#FFFFFF',
-                                letterSpacing: 2
+                    {/* Film stamp — full width landscape */}
+                    <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible"
+                                className="flex justify-center mb-10">
+                        <div style={{position: 'relative', width: '100%', maxWidth: 350, aspectRatio: '336/247'}}>
+                            <div style={{
+                                position: 'absolute', inset: '13% 8%',
+                                background: 'rgba(0,0,0,0.35)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
                             }}>
-                                Go Back
-                            </span>
+                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                    <circle cx="20" cy="20" r="18" stroke="white" strokeWidth="1.5" opacity={0.5}/>
+                                    <path d="M16 13L30 20L16 27V13Z" fill="white" opacity={0.5}/>
+                                </svg>
+                            </div>
+                            <img src="/stamp-1.png" alt=""
+                                 style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}}/>
                         </div>
-                    </Link>
-                </motion.div>
+                    </motion.div>
 
+                    {/* The Photos */}
+                    <motion.h2 className="text-center"
+                               style={{
+                                   fontFamily: "'Lovers Quarrel', cursive",
+                                   fontSize: 64,
+                                   lineHeight: '72px',
+                                   marginBottom: 0
+                               }}
+                               custom={3} variants={fadeUp} initial="hidden" animate="visible">
+                        The Photos
+                    </motion.h2>
+                    <Divider/>
+
+                    {/* Row 1: circle | portrait-rect | tall-oval
+                        From Figma: stamp-5 (circle), stamp-2 (portrait rect), stamp-4 (tall oval) */}
+                    <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible"
+                                style={{display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12}}>
+                        <Stamp frame="/stamp-5.png" width={130} height={130} clip="circle"/>
+                        <Stamp frame="/stamp-2.png" width={110} height={148} clip="rect"/>
+                        <Stamp frame="/stamp-4.png" width={110} height={165} clip="oval"/>
+                    </motion.div>
+
+                    {/* Row 2: large landscape | small portrait + rubber stamp
+                        stamp-1 large, stamp-2 small, rubber stamp decoration */}
+                    <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible"
+                                style={{display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8}}>
+                        <Stamp frame="/stamp-1.png" width={240} height={177} clip="rect"/>
+                        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
+                            <Stamp frame="/stamp-2.png" width={110} height={130} clip="rect"/>
+                            <img src="/rubber-stamp.png" alt="" style={{
+                                width: 110, height: 64,
+                                opacity: 0.8,
+                                mixBlendMode: 'screen',
+                            }}/>
+                        </div>
+                    </motion.div>
+
+                </div>
             </div>
+
+            {/* ═══ SECTION 2 — grey-green ═══ */}
+            <div style={{background: 'rgba(128,140,131,0.9)', paddingBottom: 32}}>
+                <div style={{maxWidth: 402, margin: '0 auto', padding: '24px 16px 0'}}>
+
+                    {/* Row 3: two wide landscape stamps
+                        stamp-3 (wide white), stamp-2 (landscape) */}
+                    <motion.div custom={6} variants={fadeUp} initial="hidden" animate="visible"
+                                style={{display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 12}}>
+                        <Stamp frame="/stamp-3.png" width={195} height={135} clip="rect"/>
+                        <Stamp frame="/stamp-2.png" width={155} height={135} clip="rect"/>
+                    </motion.div>
+
+                    {/* Row 4: wide oval centered
+                        stamp-4 rotated = landscape oval */}
+                    <motion.div custom={7} variants={fadeUp} initial="hidden" animate="visible"
+                                style={{display: 'flex', justifyContent: 'center', marginBottom: 12}}>
+                        <Stamp frame="/stamp-5.png" width={220} height={220} clip="circle"/>
+                    </motion.div>
+
+                    {/* Row 5: circle left + landscape right
+                        stamp-5 circle, stamp-2 landscape */}
+                    <motion.div custom={8} variants={fadeUp} initial="hidden" animate="visible"
+                                style={{display: 'flex', alignItems: 'center', gap: 8}}>
+                        <Stamp frame="/stamp-5.png" width={130} height={130} clip="circle"/>
+                        <Stamp frame="/stamp-2.png" width={220} height={150} clip="rect"/>
+                    </motion.div>
+
+                </div>
+            </div>
+
+            {/* ═══ SECTION 3 — darkest green ═══ */}
+            <div style={{background: '#223726'}}>
+                <div style={{maxWidth: 402, margin: '0 auto', padding: '24px 16px 0', paddingBottom: 48}}>
+
+                    {/* Row 6: portrait stamp left + large oval right
+                        stamp-2 portrait, stamp-4 large oval */}
+                    <motion.div custom={9} variants={fadeUp} initial="hidden" animate="visible"
+                                style={{display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 12}}>
+                        <Stamp frame="/stamp-2.png" width={155} height={210} clip="rect"/>
+                        <Stamp frame="/stamp-4.png" width={200} height={210} clip="oval"/>
+                    </motion.div>
+
+                    {/* Row 7: landscape stamp left + small stamp right
+                        stamp-3, stamp-2 */}
+                    <motion.div custom={10} variants={fadeUp} initial="hidden" animate="visible"
+                                style={{display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 12}}>
+                        <Stamp frame="/stamp-3.png" width={215} height={150} clip="rect"/>
+                        <Stamp frame="/stamp-2.png" width={140} height={150} clip="rect"/>
+                    </motion.div>
+
+                    {/* Row 8: circle centered
+                        stamp-5 */}
+                    <motion.div custom={11} variants={fadeUp} initial="hidden" animate="visible"
+                                style={{display: 'flex', justifyContent: 'center', marginBottom: 40}}>
+                        <Stamp frame="/stamp-5.png" width={160} height={160} clip="circle"/>
+                    </motion.div>
+
+                    {/* Footer */}
+                    <motion.div custom={12} variants={fadeUp} initial="hidden" animate="visible"
+                                style={{display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32}}>
+                        <span style={{
+                            fontFamily: "var(--font-imprint), 'Cormorant Garamond', serif",
+                            fontSize: 48,
+                            color: '#FFFFFF',
+                            lineHeight: 1
+                        }}>ES</span>
+                        <div style={{flex: 1, height: 1, background: '#FFFEEE'}}/>
+                        <span style={{
+                            fontFamily: "'Abhaya Libre', serif",
+                            fontSize: 14,
+                            color: '#FFFFFF'
+                        }}>EZRA &amp; SALSA</span>
+                    </motion.div>
+
+                    {/* Go Back */}
+                    <motion.div custom={13} variants={fadeUp} initial="hidden" animate="visible"
+                                className="flex flex-col items-center">
+                        <Link href={backHref}>
+                            <div
+                                className="flex flex-col items-center gap-2 opacity-50 active:opacity-100 transition-opacity">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 19V5M5 12L12 5L19 12" stroke="#FFFFFF" strokeWidth="1.5"
+                                          strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                                <span style={{
+                                    fontFamily: "'Times New Roman', serif",
+                                    fontSize: 12,
+                                    color: '#FFFFFF',
+                                    letterSpacing: 2
+                                }}>Go Back</span>
+                            </div>
+                        </Link>
+                    </motion.div>
+
+                </div>
+            </div>
+
         </main>
     )
 }

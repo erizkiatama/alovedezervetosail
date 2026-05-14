@@ -6,8 +6,6 @@ const db = createClient(
     process.env.SUPABASE_ANON_KEY!
 )
 
-// POST /api/verify-token
-// Body: { name, fingerprint }
 export async function POST(req: NextRequest) {
     const {name, fingerprint} = await req.json()
 
@@ -15,7 +13,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({valid: false, reason: 'missing'}, {status: 400})
     }
 
-    // Find guest by name (case-insensitive)
     const {data: guest, error} = await db
         .from('guests')
         .select('*')
@@ -26,21 +23,38 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({valid: false, reason: 'invalid'})
     }
 
-    // First time opening — record fingerprint
-    if (!guest.fingerprint) {
+    const fingerprints: string[] = guest.fingerprints ?? []
+
+    // Already registered on this device — let in
+    if (fingerprints.includes(fingerprint)) {
+        return NextResponse.json({valid: true, name: guest.name, lenient: guest.lenient})
+    }
+
+    // Lenient group — always allow new devices in
+    if (guest.lenient) {
         await db
             .from('guests')
-            .update({fingerprint, first_opened_at: new Date().toISOString()})
+            .update({
+                fingerprints: [...fingerprints, fingerprint],
+                first_opened_at: guest.first_opened_at ?? new Date().toISOString(),
+            })
             .eq('id', guest.id)
-
-        return NextResponse.json({valid: true, name: guest.name})
+        return NextResponse.json({valid: true, name: guest.name, lenient: true})
     }
 
-    // Returning visitor — check fingerprint matches
-    if (guest.fingerprint === fingerprint) {
-        return NextResponse.json({valid: true, name: guest.name})
+    // Strict — only allow if no fingerprint registered yet (first open)
+    if (fingerprints.length >= 1) {
+        return NextResponse.json({valid: false, reason: 'device_mismatch'})
     }
 
-    // Different device — blocked
-    return NextResponse.json({valid: false, reason: 'device_mismatch'})
+    // First time opening — register fingerprint
+    await db
+        .from('guests')
+        .update({
+            fingerprints: [fingerprint],
+            first_opened_at: new Date().toISOString(),
+        })
+        .eq('id', guest.id)
+
+    return NextResponse.json({valid: true, name: guest.name, lenient: false})
 }
