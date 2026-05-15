@@ -21,10 +21,10 @@ function timeAgo(dateStr: string) {
     const mins = Math.floor(diff / 60000)
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
-    if (mins < 1) return 'Just now'
-    if (mins < 60) return `${mins} mins ago`
-    if (hours < 24) return `${hours} hours ago`
-    return `${days} days ago`
+    if (mins < 1) return 'Baru saja'
+    if (mins < 60) return `${mins} menit lalu`
+    if (hours < 24) return `${hours} jam lalu`
+    return `${days} hari lalu`
 }
 
 function WishesSection({prefillName}: { prefillName: string }) {
@@ -297,6 +297,18 @@ function InvitationContent() {
 
                 {/* PAGE 1 — THE INVITATION */}
                 <div className="px-8 pt-10">
+                    <motion.p
+                        className="text-center mb-8"
+                        style={{
+                            fontFamily: "'Times New Roman', serif",
+                            fontSize: 28,
+                            lineHeight: '48px',
+                            color: '#6E6758',
+                            direction: 'rtl'
+                        }}
+                        custom={0} variants={fadeUp} initial="hidden" animate="visible">
+                        بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ
+                    </motion.p>
                     <motion.p className="mb-2 leading-relaxed"
                               style={{fontFamily: "'Times New Roman', serif", fontSize: 15, lineHeight: '24px'}}
                               custom={0} variants={fadeUp} initial="hidden"
