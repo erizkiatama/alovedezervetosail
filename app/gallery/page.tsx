@@ -27,23 +27,10 @@ function useScale(designWidth = 402) {
     return scale
 }
 
-// Stamp = frame image + photo inside, all in one component
-// The stamp PNG is on top with mixBlendMode:'screen' (removes black bg)
-// Photo sits behind it
 function Stamp({
-                   frameUrl,
-                   photoUrl,
-                   left,
-                   top,
-                   width,
-                   height,
-                   photoLeft,
-                   photoTop,
-                   photoWidth,
-                   photoHeight,
-                   shape = 'rect',
-                   zoom = 1,
-                   photoPosition = 'center'
+                   frameUrl, photoUrl, left, top, width, height,
+                   photoLeft, photoTop, photoWidth, photoHeight,
+                   shape = 'rect', zoom = 1, photoPosition = 'center'
                }: {
     frameUrl: string
     photoUrl?: string | null
@@ -108,24 +95,23 @@ function GalleryContent() {
     const W = 402
     const H = 3200
 
-    // Photos — replace null with Supabase URLs
     const photos = {
-        p1: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-1.jpg',
-        p2: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-2.jpg',
-        p3: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-3.jpg',
-        p4: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-4.jpg',
-        p5: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-5.jpg',
-        p6: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-1.jpg',
-        p7: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-2.jpg',
-        p8: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-3.jpg',
-        p9: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-4.jpg',
-        p10: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-5.jpg',
-        p11: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-1.jpg',
-        p12: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-2.jpg',
-        p13: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-3.jpg',
-        p14: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-4.jpg',
-        p15: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-5.jpg',
-        filmBg: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/end.jpg', // full background beach photo
+        p1: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-1.webp',
+        p2: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-2.webp',
+        p3: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-3.webp',
+        p4: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-4.webp',
+        p5: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-5.webp',
+        p6: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-1.webp',
+        p7: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-2.webp',
+        p8: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-3.webp',
+        p9: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-4.webp',
+        p10: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-5.webp',
+        p11: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-1.webp',
+        p12: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-2.webp',
+        p13: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-3.webp',
+        p14: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-4.webp',
+        p15: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-5.webp',
+        filmBg: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/end.webp',
     }
 
     return (
@@ -156,7 +142,7 @@ function GalleryContent() {
                         background: '#223726'
                     }}/>
 
-                    {/* ── GALLERY TITLE: top 77 ── */}
+                    {/* ── GALLERY TITLE ── */}
                     <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible"
                                 style={{
                                     position: 'absolute', left: 114, top: 77, width: 174, height: 108,
@@ -166,7 +152,6 @@ function GalleryContent() {
                         Gallery
                     </motion.div>
 
-                    {/* Star divider */}
                     <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible">
                         <div style={{position: 'absolute', left: 15, top: 188, ...star}}/>
                         <div style={{position: 'absolute', left: 369, top: 188, ...star}}/>
@@ -227,7 +212,6 @@ function GalleryContent() {
                         The Photos
                     </motion.div>
 
-                    {/* Star divider */}
                     <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible">
                         <div style={{position: 'absolute', left: 15, top: 711, ...star}}/>
                         <div style={{position: 'absolute', left: 369, top: 711, ...star}}/>
@@ -240,7 +224,7 @@ function GalleryContent() {
                         }}/>
                     </motion.div>
 
-                    {/* ── ROW 1: circle + landscape + tall oval ── */}
+                    {/* ── ROW 1 ── */}
                     <motion.div custom={6} variants={fadeUp} initial="hidden" animate="visible">
                         <Stamp frameUrl="/Stamp-5.png" photoUrl={photos.p1}
                                left={4} top={763} width={150} height={150}
@@ -255,7 +239,7 @@ function GalleryContent() {
                                shape="oval" zoom={1.5} photoPosition='-25% 0%'/>
                     </motion.div>
 
-                    {/* ── ROW 2: large landscape + rubber stamp + small ── */}
+                    {/* ── ROW 2 ── */}
                     <motion.div custom={7} variants={fadeUp} initial="hidden" animate="visible">
                         <Stamp frameUrl="/Stamp-1.png" photoUrl={photos.p4}
                                left={-11} top={904} width={282} height={208}
@@ -326,34 +310,33 @@ function GalleryContent() {
                                shape="circle" zoom={1.25}/>
                     </motion.div>
 
-                    {/* ── FULL BG PHOTO ── */}
-                    <div style={{
-                        position: 'absolute', left: 0, top: 2400, width: 402, height: 500,
-                        background: photos.filmBg ? undefined : '#1e2e1e',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}>
-                        {photos.filmBg
-                            ? <img src={photos.filmBg} alt=""
-                                   style={{width: '100%', height: '100%', objectFit: 'cover'}}/>
-                            : <svg width="40" height="40" viewBox="0 0 28 28" fill="none" opacity={0.2}>
-                                <rect x="2" y="5" width="24" height="18" rx="3" stroke="#fff" strokeWidth="1.2"/>
-                                <circle cx="14" cy="14" r="4" stroke="#fff" strokeWidth="1.2"/>
-                            </svg>
-                        }
+                    {/* ── FULL BG PHOTO with gradient fade ── */}
+                    <div style={{position: 'absolute', left: 0, top: 2200, width: 402, height: 1000}}>
+                        <img src={photos.filmBg} alt="" style={{
+                            position: 'absolute', inset: 0,
+                            width: '100%', height: '100%',
+                            objectFit: 'cover', objectPosition: 'center top',
+                        }}/>
+                        {/* Fade from dark green → transparent */}
+                        <div style={{
+                            position: 'absolute', inset: 0,
+                            background: 'linear-gradient(180deg, #223726 0%, rgba(34,55,38,0.8) 15%, rgba(34,55,38,0) 45%)',
+                            pointerEvents: 'none',
+                        }}/>
                     </div>
 
                     {/* Ezra & Salsa */}
                     <div style={{
-                        position: 'absolute', left: 93, top: 2930, width: 220, height: 72,
+                        position: 'absolute', left: 93, top: 2730, width: 220, height: 72,
                         fontFamily: "'Lovers Quarrel', cursive", fontSize: 64, lineHeight: '72px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF'
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', whiteSpace: 'nowrap'
                     }}>
                         Ezra &amp; Salsa
                     </div>
 
                     {/* Footer */}
                     <div style={{
-                        position: 'absolute', left: 14, top: 3020,
+                        position: 'absolute', left: 14, top: 3065,
                         fontFamily: "var(--font-imprint), 'Cormorant Garamond', serif",
                         fontSize: 48, lineHeight: '57px', color: '#FFFFFF'
                     }}>ES
@@ -361,28 +344,28 @@ function GalleryContent() {
                     <div style={{
                         position: 'absolute',
                         left: 81,
-                        top: 3066,
+                        top: 3096,
                         width: 293,
                         borderTop: '1px solid #FFFEEE'
                     }}/>
                     <div style={{
-                        position: 'absolute', left: 291, top: 3069,
+                        position: 'absolute', left: 275, top: 3099,
                         fontFamily: "'Abhaya Libre', serif", fontSize: 14, color: '#FFFFFF'
-                    }}>EZRA &amp; SALSA
+                    }}>#alovedEZervetoSAil
                     </div>
 
                     {/* Go Back */}
-                    <div style={{position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 3130}}>
+                    <div style={{position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 3140}}>
                         <Link href={backHref}>
                             <div
-                                className="flex flex-col items-center gap-2 opacity-50 active:opacity-100 transition-opacity">
+                                className="flex flex-col items-center gap-2 active:opacity-100 transition-opacity">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                     <path d="M12 19V5M5 12L12 5L19 12" stroke="#FFFFFF" strokeWidth="1.5"
                                           strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                                 <span style={{
                                     fontFamily: "'Times New Roman', serif",
-                                    fontSize: 12,
+                                    fontSize: 14,
                                     color: '#FFFFFF',
                                     letterSpacing: 2
                                 }}>Go Back</span>
