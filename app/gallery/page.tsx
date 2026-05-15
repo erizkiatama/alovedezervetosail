@@ -115,14 +115,17 @@ function GalleryContent() {
         p3: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-3.jpg',
         p4: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-4.jpg',
         p5: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/1-5.jpg',
-        p6: null,
-        p7: null,
-        p8: null,
-        p9: null,
-        p10: null,
-        p11: null,
-        p12: null,
-        filmBg: null, // full background beach photo
+        p6: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-1.jpg',
+        p7: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-2.jpg',
+        p8: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-3.jpg',
+        p9: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-4.jpg',
+        p10: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/2-5.jpg',
+        p11: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-1.jpg',
+        p12: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-2.jpg',
+        p13: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-3.jpg',
+        p14: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-4.jpg',
+        p15: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/3-5.jpg',
+        filmBg: 'https://cyrubgnnrqrwsapilqbz.supabase.co/storage/v1/object/public/wedding/end.jpg', // full background beach photo
     }
 
     return (
@@ -256,7 +259,8 @@ function GalleryContent() {
                     <motion.div custom={7} variants={fadeUp} initial="hidden" animate="visible">
                         <Stamp frameUrl="/Stamp-1.png" photoUrl={photos.p4}
                                left={-11} top={904} width={282} height={208}
-                               photoLeft={18} photoTop={938} photoWidth={233} photoHeight={143} photoPosition='0% 62.5%'/>
+                               photoLeft={18} photoTop={938} photoWidth={233} photoHeight={143}
+                               photoPosition='0% 62.5%'/>
                         <img src="/rubber-stamp.png" alt="" style={{
                             position: 'absolute', left: -23, top: 1039, width: 159, height: 93,
                             transform: 'rotate(-16.27deg)', opacity: 0.85, mixBlendMode: 'screen',
@@ -271,53 +275,55 @@ function GalleryContent() {
                         <Stamp frameUrl="/Stamp-3.png" photoUrl={photos.p6}
                                left={0} top={1166} width={261} height={154}
                                photoLeft={23} photoTop={1192} photoWidth={216} photoHeight={106}/>
-                        <Stamp frameUrl="/Stamp-1.png" photoUrl={photos.p6}
+                        <Stamp frameUrl="/Stamp-1.png" photoUrl={photos.p7}
                                left={266} top={1152} width={130} height={210}
-                               photoLeft={288} photoTop={1180} photoWidth={89} photoHeight={148}/>
+                               photoLeft={279} photoTop={1180} photoWidth={107} photoHeight={148}/>
                     </motion.div>
 
                     {/* ── GREY-GREEN: ROW 4 ── */}
                     <motion.div custom={9} variants={fadeUp} initial="hidden" animate="visible">
-                        <Stamp frameUrl="/Stamp-5.png" photoUrl={photos.p7}
-                               left={20} top={1315} width={186} height={185}
-                               photoLeft={41} photoTop={1355} photoWidth={147} photoHeight={150}
-                               shape="circle"/>
-                        <Stamp frameUrl="/Stamp-4.png" photoUrl={photos.p8}
-                               left={200} top={1363} width={200} height={300}
-                               photoLeft={222} photoTop={1370} photoWidth={155} photoHeight={240}
-                               shape="oval"/>
+                        <Stamp frameUrl="/Stamp-5.png" photoUrl={photos.p8}
+                               left={5} top={1315} width={186} height={185}
+                               photoLeft={26} photoTop={1333} photoWidth={147} photoHeight={150}
+                               shape="circle" photoPosition='-25%'/>
+                        <Stamp frameUrl="/Stamp-4.png" photoUrl={photos.p10}
+                               left={185} top={1363} width={220} height={300}
+                               photoLeft={208} photoTop={1387} photoWidth={175} photoHeight={250}
+                               shape="oval" zoom={1.25} photoPosition='0% 250%'/>
                     </motion.div>
 
                     {/* ── GREY-GREEN: ROW 5 ── */}
                     <motion.div custom={10} variants={fadeUp} initial="hidden" animate="visible">
                         <Stamp frameUrl="/Stamp-2.png" photoUrl={photos.p9}
-                               left={-15} top={1500} width={245} height={180}
-                               photoLeft={50} photoTop={1525} photoWidth={125} photoHeight={125}/>
+                               left={-40} top={1500} width={245} height={180}
+                               photoLeft={25} photoTop={1525} photoWidth={125} photoHeight={125} zoom={1.45}
+                               photoPosition='0% 110%'/>
                     </motion.div>
 
                     {/* ── DARK GREEN: ROW 6 ── */}
                     <motion.div custom={11} variants={fadeUp} initial="hidden" animate="visible">
-                        <Stamp frameUrl="/Stamp-3.png" photoUrl={photos.p9}
-                               left={-2} top={1870} width={165} height={270}
-                               photoLeft={18} photoTop={1890} photoWidth={127} photoHeight={220}/>
-                        <Stamp frameUrl="/Stamp-4.png" photoUrl={photos.p10}
-                               left={168} top={1880} width={225} height={160}
-                               photoLeft={185} photoTop={1900} photoWidth={190} photoHeight={120}
-                               shape="oval"/>
+                        <Stamp frameUrl="/Stamp-3.png" photoUrl={photos.p11}
+                               left={5} top={1670} width={165} height={305}
+                               photoLeft={23} photoTop={1710} photoWidth={127} photoHeight={225}/>
+                        <Stamp frameUrl="/Stamp-4.png" photoUrl={photos.p12}
+                               left={168} top={1675} width={235} height={150}
+                               photoLeft={185} photoTop={1688} photoWidth={200} photoHeight={125}
+                               shape="oval" photoPosition="0% 65%"/>
                     </motion.div>
 
                     {/* ── DARK GREEN: ROW 7 ── */}
                     <motion.div custom={12} variants={fadeUp} initial="hidden" animate="visible">
-                        <Stamp frameUrl="/Stamp-1.png" photoUrl={photos.p10}
-                               left={170} top={2062} width={227} height={167}
-                               photoLeft={192} photoTop={2090} photoWidth={187} photoHeight={113}/>
-                        <Stamp frameUrl="/Stamp-2.png" photoUrl={photos.p11}
-                               left={-60} top={2155} width={294} height={216}
-                               photoLeft={20} photoTop={2190} photoWidth={143} photoHeight={143}/>
-                        <Stamp frameUrl="/Stamp-5.png" photoUrl={photos.p12}
-                               left={193} top={2158} width={192} height={191}
-                               photoLeft={210} photoTop={2175} photoWidth={155} photoHeight={155}
-                               shape="circle"/>
+                        <Stamp frameUrl="/Stamp-1.png" photoUrl={photos.p13}
+                               left={165} top={1812} width={227} height={165}
+                               photoLeft={187} photoTop={1838} photoWidth={187} photoHeight={113} zoom={2.25}
+                               photoPosition="0% 200%"/>
+                        <Stamp frameUrl="/Stamp-2.png" photoUrl={photos.p14}
+                               left={-60} top={1966} width={294} height={216}
+                               photoLeft={21} photoTop={2000} photoWidth={143} photoHeight={143}/>
+                        <Stamp frameUrl="/Stamp-5.png" photoUrl={photos.p15}
+                               left={193} top={1970} width={200} height={200}
+                               photoLeft={215} photoTop={1992} photoWidth={155} photoHeight={155}
+                               shape="circle" zoom={1.25}/>
                     </motion.div>
 
                     {/* ── FULL BG PHOTO ── */}
