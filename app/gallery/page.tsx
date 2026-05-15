@@ -176,29 +176,20 @@ function GalleryContent() {
 
                     {/* Film stamp */}
                     <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible">
-                        <div style={{
-                            position: 'absolute',
-                            left: 67,
-                            top: 354,
-                            width: 275,
-                            height: 163,
-                            background: 'rgba(0,0,0,0.3)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                                <circle cx="20" cy="20" r="18" stroke="white" strokeWidth="1.5" opacity={0.5}/>
-                                <path d="M16 13L30 20L16 27V13Z" fill="white" opacity={0.5}/>
-                            </svg>
-                        </div>
+                        <iframe
+                            src="https://www.youtube.com/embed/EDvOh6QK_1o?rel=0&modestbranding=1&cc_load_policy=0&&cc_lang_pref=none&iv_load_policy=3"
+                            style={{position: 'absolute', left: 40, top: 365, width: 330, height: 195, border: 'none'}}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        />
                         <img src="/stamp-1.png" alt="" style={{
                             position: 'absolute',
-                            left: 33,
+                            left: 0,
                             top: 311,
-                            width: 336,
-                            height: 247,
-                            mixBlendMode: 'screen'
+                            width: 420,
+                            height: 300,
+                            mixBlendMode: 'screen',
+                            pointerEvents: 'none'
                         }}/>
                     </motion.div>
 
@@ -327,9 +318,19 @@ function GalleryContent() {
 
                     {/* Ezra & Salsa */}
                     <div style={{
-                        position: 'absolute', left: 93, top: 2730, width: 220, height: 72,
-                        fontFamily: "'Lovers Quarrel', cursive", fontSize: 64, lineHeight: '72px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', whiteSpace: 'nowrap'
+                        position: 'absolute',
+                        left: 93,
+                        top: 2730,
+                        width: 220,
+                        height: 72,
+                        fontFamily: "'Lovers Quarrel', cursive",
+                        fontSize: 64,
+                        lineHeight: '72px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#FFFFFF',
+                        whiteSpace: 'nowrap'
                     }}>
                         Ezra &amp; Salsa
                     </div>
