@@ -152,7 +152,12 @@ function EnvelopePage({ guestName }: { guestName: string | null }) {
                             <p className="font-body italic text-sm" style={{ color: '#354B39', letterSpacing: 1 }}>
                                 Kepada Yth.
                             </p>
-                            <p className="font-display text-lg tracking-widest mt-1" style={{ color: '#2a3d2a' }}>
+                            <p className="font-display tracking-widest mt-1" style={{
+                                color: '#2a3d2a',
+                                fontSize: name && name.length > 20 ? 13 : 18,
+                                maxWidth: 306,
+                                lineHeight: '1.3',
+                            }}>
                                 {name || 'Tamu Undangan'}
                             </p>
                         </motion.div>
