@@ -2,10 +2,15 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { usePathname } from 'next/navigation'
 
 export default function VinylPlayer() {
     const [playing, setPlaying] = useState(false)
     const audioRef = useRef<HTMLAudioElement | null>(null)
+    const pathname = usePathname()
+
+    // Don't show on admin page
+    if (pathname === '/admin') return null
 
     useEffect(() => {
         const audio = new Audio('/music.mp3')
