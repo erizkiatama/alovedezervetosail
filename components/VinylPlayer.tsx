@@ -26,6 +26,24 @@ export default function VinylPlayer() {
                 }
             }
 
+        // Pause music when YouTube iframe takes focus (video play)
+        function onBlur() {
+            if (audioRef.current && !audioRef.current.paused) {
+                audioRef.current.pause()
+                setPlaying(false)
+                // Don't set __userPaused so music resumes when they come back
+            }
+        }
+        window.addEventListener('blur', onBlur)
+
+        // Resume music when user comes back from video (if not manually paused)
+        function onFocus() {
+            if (audioRef.current && !(window as any).__userPaused) {
+                audioRef.current.play().then(() => setPlaying(true)).catch(() => { })
+            }
+        }
+        window.addEventListener('focus', onFocus)
+
         // Play on any interaction as fallback
         function playOnFirstTouch() {
             if (!(window as any).__userPaused) {
@@ -38,6 +56,8 @@ export default function VinylPlayer() {
         return () => {
             audio.pause()
             audio.src = ''
+            window.removeEventListener('blur', onBlur)
+            window.removeEventListener('focus', onFocus)
             document.removeEventListener('touchstart', playOnFirstTouch)
             document.removeEventListener('click', playOnFirstTouch)
         }
