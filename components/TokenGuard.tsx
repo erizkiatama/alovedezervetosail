@@ -1,8 +1,8 @@
 'use client'
 
-import {useEffect, useState} from 'react'
-import {useRouter} from 'next/navigation'
-import {motion} from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
 
 type Props = {
     name: string | null
@@ -10,7 +10,7 @@ type Props = {
     onVerified?: (name: string) => React.ReactNode
 }
 
-export default function TokenGuard({name, children, onVerified}: Props) {
+export default function TokenGuard({ name, children, onVerified }: Props) {
     const [status, setStatus] = useState<'checking' | 'valid' | 'no_name'>('checking')
     const [guestName, setGuestName] = useState<string | null>(null)
     const router = useRouter()
@@ -39,14 +39,15 @@ export default function TokenGuard({name, children, onVerified}: Props) {
 
                 const res = await fetch('/api/verify-token', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({name, fingerprint}),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, fingerprint }),
                 })
                 const data = await res.json()
 
                 if (data.valid) {
-                    // Cache verification so next visit skips the check
-                    localStorage.setItem(cacheKey, 'true')
+                    if (!data.lenient) {
+                        localStorage.setItem(cacheKey, 'true')
+                    }
                     setGuestName(data.name)
                     setStatus('valid')
                 } else {
@@ -58,29 +59,50 @@ export default function TokenGuard({name, children, onVerified}: Props) {
             }
         }
 
-        verify()
+        // Wait for first user interaction before verifying
+        // This prevents Instagram/WA preview bots from registering fingerprints
+        const onInteract = () => {
+            verify()
+            document.removeEventListener('touchstart', onInteract)
+            document.removeEventListener('click', onInteract)
+            document.removeEventListener('mousemove', onInteract)
+        }
+
+        // Fallback: verify after 3s even without interaction
+        const timer = setTimeout(verify, 3000)
+
+        document.addEventListener('touchstart', onInteract, { once: true })
+        document.addEventListener('click', onInteract, { once: true })
+        document.addEventListener('mousemove', onInteract, { once: true })
+
+        return () => {
+            clearTimeout(timer)
+            document.removeEventListener('touchstart', onInteract)
+            document.removeEventListener('click', onInteract)
+            document.removeEventListener('mousemove', onInteract)
+        }
     }, [name])
 
     if (status === 'checking') {
         return (
-            <main className="min-h-screen flex flex-col items-center justify-center" style={{background: '#C9F5BE'}}>
+            <main className="min-h-screen flex flex-col items-center justify-center" style={{ background: '#C9F5BE' }}>
                 <motion.div
                     className="flex flex-col items-center gap-4"
-                    initial={{opacity: 0}}
-                    animate={{opacity: 1}}
-                    transition={{duration: 0.5}}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
                 >
                     <motion.div
-                        animate={{rotate: 360}}
-                        transition={{duration: 2, repeat: Infinity, ease: 'linear'}}
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                     >
                         <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                             <rect x="4" y="10" width="32" height="22" rx="3" stroke="#2d5a3d" strokeWidth="1.5"
-                                  fill="none"/>
-                            <path d="M4 13L20 24L36 13" stroke="#2d5a3d" strokeWidth="1.5" strokeLinecap="round"/>
+                                fill="none" />
+                            <path d="M4 13L20 24L36 13" stroke="#2d5a3d" strokeWidth="1.5" strokeLinecap="round" />
                         </svg>
                     </motion.div>
-                    <p className="font-body italic text-sm" style={{color: '#2d5a3d', letterSpacing: 2}}>
+                    <p className="font-body italic text-sm" style={{ color: '#2d5a3d', letterSpacing: 2 }}>
                         Opening invitation...
                     </p>
                 </motion.div>
