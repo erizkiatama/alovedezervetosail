@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createClient } from '@supabase/supabase-js'
 
 const PASSWORD = 'alovedezervetosail'
 const BASE_URL = 'https://alovedezervetosail.in'
@@ -18,24 +17,36 @@ type Guest = {
 
 function generateMessage(name: string) {
     const link = `${BASE_URL}/?name=${encodeURIComponent(name)}`
-    return `Assalamualaikum, ${name} 🤍
 
-Dengan penuh kebahagiaan, kami mengundang Anda ke pernikahan kami:
+    const rawMessage = `Kepada Yth. 
+Bapak/Ibu/Saudara/i
+*_${name}_*
 
-Muhammad Ezra Rizkiatama Putra
+Assalamualaikum Warahmatullahi Wabarakatuh.
+
+Bismillahirahmanirrahim.
+Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami:
+
+Muhammad Ezra Rizkiatama Putra, S.Kom.
 &
-Hefa Salsabila Iskandar
+Hefa Salsabila Iskandar, S.I.Kom. 
 
-📅 Sabtu, 30 Mei 2026
-🕐 Pukul 10.30 – 13.30 WITA
-📍 Islamic Centre NTB
+Berikut link untuk info lengkap dari acara kami:
 
-Silakan buka undangan digital kami di:
 ${link}
 
-Merupakan kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.
+Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.
 
-#alovedEZervetoSAil`
+Mohon untuk tidak menyebarluaskan undangan ini. 
+
+Wassalamualaikum Warahmatullahi Wabarakatuh.
+
+Terima Kasih.
+
+Hormat kami,
+Ezra & Salsa`
+
+    return rawMessage.split('\n').map(line => encodeURIComponent(line)).join('%0A')
 }
 
 export default function AdminPage() {
@@ -52,10 +63,17 @@ export default function AdminPage() {
     const [newLenient, setNewLenient] = useState(false)
     const [adding, setAdding] = useState(false)
 
+    useEffect(() => {
+        if (localStorage.getItem('admin_authed') === 'true') {
+            setAuthed(true)
+        }
+    }, [])
+
     function login() {
         if (inputRef.current === PASSWORD) {
             setAuthed(true)
             setError('')
+            localStorage.setItem('admin_authed', 'true')
         } else {
             setError('Wrong password')
         }
@@ -115,8 +133,8 @@ export default function AdminPage() {
     function openWA(guest: Guest) {
         const msg = generateMessage(guest.name)
         const url = guest.wa_number
-            ? `https://wa.me/${guest.wa_number}?text=${encodeURIComponent(msg)}`
-            : `https://wa.me/?text=${encodeURIComponent(msg)}`
+            ? `https://wa.me/${guest.wa_number}?text=${msg}`
+            : `https://wa.me/?text=${msg}`
         window.open(url, '_blank')
     }
 
@@ -158,9 +176,15 @@ export default function AdminPage() {
             <div style={{ maxWidth: 600, margin: '0 auto' }}>
 
                 {/* Header */}
-                <div style={{ marginBottom: 32 }}>
-                    <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 36, color: '#C9F5BE', marginBottom: 4 }}>ES Admin</h1>
-                    <p style={{ fontSize: 13, color: '#7a9a7a' }}>Ezra & Salsa · 30 Mei 2026</p>
+                <div style={{ marginBottom: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 36, color: '#C9F5BE', marginBottom: 4 }}>ES Admin</h1>
+                        <p style={{ fontSize: 13, color: '#7a9a7a' }}>Ezra & Salsa · 30 Mei 2026</p>
+                    </div>
+                    <button onClick={() => { localStorage.removeItem('admin_authed'); setAuthed(false) }}
+                        style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #354B39', background: 'transparent', color: '#7a9a7a', fontSize: 12, cursor: 'pointer' }}>
+                        Logout
+                    </button>
                 </div>
 
                 {/* Stats */}
