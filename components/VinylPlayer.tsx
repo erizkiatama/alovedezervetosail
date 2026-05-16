@@ -14,18 +14,23 @@ export default function VinylPlayer() {
         audioRef.current = audio
 
         // Try autoplay first
-        audio.play().then(() => setPlaying(true)).catch(() => { })
+        audio.play().then(() => {
+            setPlaying(true)
+                ; (window as any).__userPaused = false
+        }).catch(() => { })
 
-            // Also attach to window so envelope page can trigger it
+            // Expose play function — only plays if user hasn't manually paused
             ; (window as any).__playMusic = () => {
-                if (audioRef.current && !playing) {
+                if (audioRef.current && !(window as any).__userPaused) {
                     audioRef.current.play().then(() => setPlaying(true)).catch(() => { })
                 }
             }
 
         // Play on any interaction as fallback
         function playOnFirstTouch() {
-            audio.play().then(() => setPlaying(true)).catch(() => { })
+            if (!(window as any).__userPaused) {
+                audio.play().then(() => setPlaying(true)).catch(() => { })
+            }
         }
         document.addEventListener('touchstart', playOnFirstTouch, { once: true })
         document.addEventListener('click', playOnFirstTouch, { once: true })
@@ -42,8 +47,15 @@ export default function VinylPlayer() {
         e.stopPropagation()
         const audio = audioRef.current
         if (!audio) return
-        if (playing) { audio.pause(); setPlaying(false) }
-        else { audio.play(); setPlaying(true) }
+        if (playing) {
+            audio.pause()
+            setPlaying(false)
+                ; (window as any).__userPaused = true
+        } else {
+            audio.play()
+            setPlaying(true)
+                ; (window as any).__userPaused = false
+        }
     }
 
     return (
