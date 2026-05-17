@@ -13,11 +13,12 @@ type Guest = {
     first_opened_at: string | null
     created_at: string
     wa_number: string | null
+    responsibility: string | null
 }
 
+// Template for Ezra/Salsa guests (undangan dari kami)
 function generateMessage(name: string) {
     const link = `${BASE_URL}/?name=${encodeURIComponent(name)}`
-
     const rawMessage = `Kepada Yth. 
 Bapak/Ibu/Saudara/i
 *_${name}_*
@@ -45,8 +46,45 @@ Terima Kasih.
 
 Hormat kami,
 Ezra & Salsa`
-
     return rawMessage.split('\n').map(line => encodeURIComponent(line)).join('%0A')
+}
+
+// Template for family/parent guests (undangan dari orang tua)
+function generateMessageFamily(name: string) {
+    const link = `${BASE_URL}/?name=${encodeURIComponent(name)}`
+    const rawMessage = `Kepada Yth. 
+Bapak/Ibu/Saudara/i
+*_${name}_*
+
+Assalamualaikum Warahmatullahi Wabarakatuh.
+
+Bismillahirahmanirrahim.
+Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan anak kami:
+
+Muhammad Ezra Rizkiatama Putra, S.Kom.
+&
+Hefa Salsabila Iskandar, S.I.Kom. 
+
+Berikut link untuk info lengkap dari acara kami:
+
+${link}
+
+Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.
+
+Mohon untuk tidak menyebarluaskan undangan ini. 
+
+Wassalamualaikum Warahmatullahi Wabarakatuh.
+
+Terima Kasih.`
+    return rawMessage.split('\n').map(line => encodeURIComponent(line)).join('%0A')
+}
+
+function getTemplate(guest: Guest): string {
+    const r = guest.responsibility?.toLowerCase() ?? ''
+    if (r === 'ezra' || r === 'salsa') {
+        return generateMessage(guest.name)
+    }
+    return generateMessageFamily(guest.name)
 }
 
 export default function AdminPage() {
@@ -58,10 +96,13 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(false)
     const [search, setSearch] = useState('')
     const [copiedId, setCopiedId] = useState<number | null>(null)
+    const [copiedMsgId, setCopiedMsgId] = useState<number | null>(null)
     const [newName, setNewName] = useState('')
     const [newWaNumber, setNewWaNumber] = useState('')
+    const [newResponsibility, setNewResponsibility] = useState('')
     const [newLenient, setNewLenient] = useState(false)
     const [adding, setAdding] = useState(false)
+    const [filterResponsibility, setFilterResponsibility] = useState('')
 
     useEffect(() => {
         if (localStorage.getItem('admin_authed') === 'true') {
@@ -103,11 +144,17 @@ export default function AdminPage() {
             const res = await fetch('/api/admin/guests', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newName.trim(), lenient: newLenient, wa_number: newWaNumber.trim() || null }),
+                body: JSON.stringify({
+                    name: newName.trim(),
+                    lenient: newLenient,
+                    wa_number: newWaNumber.trim() || null,
+                    responsibility: newResponsibility.trim() || null,
+                }),
             })
             if (res.ok) {
                 setNewName('')
                 setNewWaNumber('')
+                setNewResponsibility('')
                 setNewLenient(false)
                 fetchGuests()
             }
@@ -131,7 +178,7 @@ export default function AdminPage() {
     }
 
     function openWA(guest: Guest) {
-        const msg = generateMessage(guest.name)
+        const msg = getTemplate(guest)
         const url = guest.wa_number
             ? `https://wa.me/${guest.wa_number}?text=${msg}`
             : `https://wa.me/?text=${msg}`
@@ -145,7 +192,25 @@ export default function AdminPage() {
         setTimeout(() => setCopiedId(null), 2000)
     }
 
-    const filtered = guests.filter(g => g.name.toLowerCase().includes(search.toLowerCase()))
+    async function copyMessage(guest: Guest) {
+        const link = `${BASE_URL}/?name=${encodeURIComponent(guest.name)}`
+        const r = guest.responsibility?.toLowerCase() ?? ''
+        const isFamily = r !== 'ezra' && r !== 'salsa'
+
+        const msg = isFamily
+            ? `Kepada Yth. \nBapak/Ibu/Saudara/i\n*_${guest.name}_*\n\nAssalamualaikum Warahmatullahi Wabarakatuh.\n\nBismillahirahmanirrahim.\nTanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan anak kami:\n\nMuhammad Ezra Rizkiatama Putra, S.Kom.\n&\nHefa Salsabila Iskandar, S.I.Kom. \n\nBerikut link untuk info lengkap dari acara kami:\n\n${link}\n\nMerupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.\n\nMohon untuk tidak menyebarluaskan undangan ini. \n\nWassalamualaikum Warahmatullahi Wabarakatuh.\n\nTerima Kasih.`
+            : `Kepada Yth. \nBapak/Ibu/Saudara/i\n*_${guest.name}_*\n\nAssalamualaikum Warahmatullahi Wabarakatuh.\n\nBismillahirahmanirrahim.\nTanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami:\n\nMuhammad Ezra Rizkiatama Putra, S.Kom.\n&\nHefa Salsabila Iskandar, S.I.Kom. \n\nBerikut link untuk info lengkap dari acara kami:\n\n${link}\n\nMerupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.\n\nMohon untuk tidak menyebarluaskan undangan ini. \n\nWassalamualaikum Warahmatullahi Wabarakatuh.\n\nTerima Kasih.\n\nHormat kami,\nEzra & Salsa`
+
+        await navigator.clipboard.writeText(msg)
+        setCopiedMsgId(guest.id)
+        setTimeout(() => setCopiedMsgId(null), 2000)
+    }
+
+    const responsibilities = Array.from(new Set(guests.map(g => g.responsibility).filter(Boolean))) as string[]
+    const filtered = guests.filter(g =>
+        g.name.toLowerCase().includes(search.toLowerCase()) &&
+        (filterResponsibility === '' || g.responsibility === filterResponsibility)
+    )
     const opened = guests.filter(g => g.first_opened_at).length
 
     if (!authed) {
@@ -221,6 +286,12 @@ export default function AdminPage() {
                         value={newWaNumber}
                         onChange={e => setNewWaNumber(e.target.value)}
                         placeholder="WA number (e.g. 628123456789)"
+                        style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #354B39', background: '#1a1f1a', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
+                    />
+                    <input
+                        value={newResponsibility}
+                        onChange={e => setNewResponsibility(e.target.value)}
+                        placeholder="Responsibility (e.g. Ezra, Salsa, Keluarga)"
                         style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #354B39', background: '#1a1f1a', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }}
                     />
                     <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#7a9a7a', cursor: 'pointer' }}>
@@ -228,6 +299,30 @@ export default function AdminPage() {
                         Lenient (group — multiple devices allowed)
                     </label>
                 </div>
+
+                {/* Responsibility filter */}
+                {responsibilities.length > 0 && (
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                        <button onClick={() => setFilterResponsibility('')}
+                            style={{
+                                padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, cursor: 'pointer',
+                                background: filterResponsibility === '' ? '#354B39' : '#243024',
+                                color: filterResponsibility === '' ? '#C9F5BE' : '#7a9a7a'
+                            }}>
+                            All ({guests.length})
+                        </button>
+                        {responsibilities.map(r => (
+                            <button key={r} onClick={() => setFilterResponsibility(r)}
+                                style={{
+                                    padding: '6px 14px', borderRadius: 20, border: 'none', fontSize: 12, cursor: 'pointer',
+                                    background: filterResponsibility === r ? '#354B39' : '#243024',
+                                    color: filterResponsibility === r ? '#C9F5BE' : '#7a9a7a'
+                                }}>
+                                {r} ({guests.filter(g => g.responsibility === r).length})
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Search */}
                 <input
@@ -244,29 +339,32 @@ export default function AdminPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {filtered.map(guest => (
                             <div key={guest.id} style={{ background: '#243024', borderRadius: 12, padding: '14px 16px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                                    <div>
-                                        <p style={{ fontSize: 15, fontWeight: 600, color: '#C9F5BE' }}>{guest.name}</p>
-                                        <p style={{ fontSize: 11, color: '#7a9a7a', marginTop: 2 }}>
-                                            {guest.lenient ? '👥 Lenient' : '🔒 Strict'} ·{' '}
-                                            {guest.first_opened_at
-                                                ? `✅ Opened ${new Date(guest.first_opened_at).toLocaleDateString('id-ID')}`
-                                                : '⏳ Not opened yet'
-                                            }
-                                        </p>
-                                        {guest.wa_number && (
-                                            <p style={{ fontSize: 11, color: '#7a9a7a', marginTop: 2 }}>📱 {guest.wa_number}</p>
-                                        )}
-                                    </div>
+                                <div style={{ marginBottom: 8 }}>
+                                    <p style={{ fontSize: 15, fontWeight: 600, color: '#C9F5BE' }}>{guest.name}</p>
+                                    <p style={{ fontSize: 11, color: '#7a9a7a', marginTop: 2 }}>
+                                        {guest.lenient ? '👥 Lenient' : '🔒 Strict'} ·{' '}
+                                        {guest.first_opened_at
+                                            ? `✅ Opened ${new Date(guest.first_opened_at).toLocaleDateString('id-ID')}`
+                                            : '⏳ Not opened yet'
+                                        }
+                                        {guest.responsibility ? ` · 🏷️ ${guest.responsibility}` : ''}
+                                    </p>
+                                    {guest.wa_number && (
+                                        <p style={{ fontSize: 11, color: '#7a9a7a', marginTop: 2 }}>📱 {guest.wa_number}</p>
+                                    )}
                                 </div>
                                 <div style={{ display: 'flex', gap: 6 }}>
                                     <button onClick={() => openWA(guest)}
                                         style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: 'none', background: '#25D366', color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
                                         {guest.wa_number ? '💬 WA' : '💬 WA (no number)'}
                                     </button>
+                                    <button onClick={() => copyMessage(guest)}
+                                        style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: '1px solid #354B39', background: 'transparent', color: copiedMsgId === guest.id ? '#C9F5BE' : '#7a9a7a', fontSize: 12, cursor: 'pointer' }}>
+                                        {copiedMsgId === guest.id ? '✓ Msg' : '📋 Msg'}
+                                    </button>
                                     <button onClick={() => copyLink(guest.name, guest.id)}
                                         style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: '1px solid #354B39', background: 'transparent', color: '#C9F5BE', fontSize: 12, cursor: 'pointer' }}>
-                                        {copiedId === guest.id ? '✓ Copied' : 'Copy Link'}
+                                        {copiedId === guest.id ? '✓ Link' : '🔗 Link'}
                                     </button>
                                     <button onClick={() => resetGuest(guest.id)}
                                         style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #354B39', background: 'transparent', color: '#7a9a7a', fontSize: 12, cursor: 'pointer' }}>

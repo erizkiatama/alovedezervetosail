@@ -17,12 +17,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-    const { name, lenient, wa_number } = await req.json()
+    const { name, lenient, wa_number, responsibility } = await req.json()
     if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 })
 
     const { data, error } = await db
         .from('guests')
-        .insert({ name: name.trim(), lenient: lenient ?? false, wa_number: wa_number ?? null })
+        .insert({ name: name.trim(), lenient: lenient ?? false, wa_number: wa_number ?? null, responsibility: responsibility ?? null })
         .select()
         .single()
 
