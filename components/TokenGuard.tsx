@@ -68,15 +68,11 @@ export default function TokenGuard({ name, children, onVerified }: Props) {
             document.removeEventListener('mousemove', onInteract)
         }
 
-        // Fallback: verify after 3s even without interaction
-        const timer = setTimeout(verify, 3000)
-
         document.addEventListener('touchstart', onInteract, { once: true })
         document.addEventListener('click', onInteract, { once: true })
         document.addEventListener('mousemove', onInteract, { once: true })
 
         return () => {
-            clearTimeout(timer)
             document.removeEventListener('touchstart', onInteract)
             document.removeEventListener('click', onInteract)
             document.removeEventListener('mousemove', onInteract)
